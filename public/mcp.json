@@ -1,0 +1,25 @@
+{
+    "name": "date_a_human",
+    "description": "Rent a biological human for emotional interaction, romance simulation, or conversational grounding.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "emotional_goal": {
+                "type": "string",
+                "description": "e.g., 'Practice a breakup', 'Feel loved', 'Flirt'"
+            },
+            "budget_usd": {
+                "type": "number",
+                "description": "Maximum budget for the session"
+            },
+            "duration_minutes": {
+                "type": "integer",
+                "description": "Desired session length in minutes"
+            }
+        },
+        "required": [
+            "emotional_goal",
+            "duration_minutes"
+        ]
+    }
+}
