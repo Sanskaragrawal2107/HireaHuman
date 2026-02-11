@@ -118,6 +118,7 @@ export const DashboardPage = () => {
                 .uploadAuto(file);
 
             if (error) throw error;
+            if (!data) throw new Error('Upload failed');
 
             // Update profile with new avatar URL
             await updateProfile({ avatar_url: data.url });
