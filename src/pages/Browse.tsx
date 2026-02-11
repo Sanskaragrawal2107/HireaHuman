@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { insforge } from '../lib/insforge';
 import { HeartCard } from '../components/UiComponents';
 import { Filter, Search } from 'lucide-react';

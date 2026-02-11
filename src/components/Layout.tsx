@@ -1,7 +1,7 @@
 
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Activity, Wifi, Battery, Search, Terminal } from 'lucide-react';
+import { Heart, Activity, Wifi, Terminal } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';

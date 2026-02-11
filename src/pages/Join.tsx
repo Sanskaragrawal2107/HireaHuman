@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { insforge } from '../lib/insforge';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Heart, Chrome, Mail, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -9,7 +9,6 @@ export const JoinPage = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [magicLinkSent, setMagicLinkSent] = useState(false);
-    const navigate = useNavigate();
     const location = useLocation();
     const isLogin = location.pathname === '/login';
 

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Heart, Search, Terminal, Zap, Shield, IndianRupee, Clock, Activity, MessageCircle, ChevronDown, Check, Wifi } from 'lucide-react';
+import { Heart, Search, Terminal, Shield, IndianRupee, Clock, Activity, MessageCircle, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 
@@ -66,10 +66,10 @@ export const LandingPage = () => {
 
                     // Trigger visit increment
                     // @ts-ignore
-                    insforge.database.rpc('increment_visits').then(() => {
+                    Promise.resolve(insforge.database.rpc('increment_visits')).then(() => {
                         // Optimistically update
                         setStats(prev => ({ ...prev, visits: (prev.visits as number) + 1 }));
-                    }).catch((err: any) => console.error(err));
+                    }).catch((err: unknown) => console.error(err));
                 }
             } catch (err) {
                 console.error("Failed to fetch initial stats", err);

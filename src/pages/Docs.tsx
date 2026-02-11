@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Terminal, Shield, Cpu, ExternalLink } from 'lucide-react';
+import { Terminal, Shield, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const CodeBlock = ({ children }: { children: React.ReactNode }) => (

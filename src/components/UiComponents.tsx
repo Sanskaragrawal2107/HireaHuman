@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { insforge } from '../lib/insforge';
@@ -26,18 +26,18 @@ export const LiveMetrics = () => {
         const fetchRealStats = async () => {
             try {
                 // 1. Count Total Hearts
-                const { count: heartCount } = await insforge
+                const { count: heartCount } = await insforge.database
                     .from('profiles')
                     .select('*', { count: 'exact', head: true });
 
                 // 2. Count Active Sessions
-                const { count: sessionCount } = await insforge
+                const { count: sessionCount } = await insforge.database
                     .from('sessions')
                     .select('*', { count: 'exact', head: true });
 
                 // 3. Sum Prices (Escrow) - Requires a stored procedure or just fetching all prices
                 // For performance, let's just fetch active sessions prices
-                const { data: sessionData } = await insforge
+                const { data: sessionData } = await insforge.database
                     .from('sessions')
                     .select('price');
 
