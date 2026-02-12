@@ -508,8 +508,26 @@ export const VerifyCompanyPage = () => {
                         {step === 'company-form' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-xl font-semibold text-slate-900 mb-1">Company details</h2>
-                                    <p className="text-slate-500 text-sm">We verify domain ownership, LinkedIn presence, and your business registration.</p>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h2 className="text-xl font-semibold text-slate-900 mb-1">Company details</h2>
+                                            <p className="text-slate-500 text-sm">We verify domain ownership, LinkedIn presence, and your business registration.</p>
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                await insforge.auth.signOut();
+                                                setUser(null);
+                                                setStep('login');
+                                            }}
+                                            className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline flex items-center gap-1"
+                                        >
+                                            Sign out <ArrowRight className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                    <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700 flex items-center gap-2 mb-4">
+                                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                        Logged in as <span className="font-bold">{user?.email}</span>
+                                    </div>
                                 </div>
 
                                 <form onSubmit={handleCompanySubmit} className="space-y-5">
