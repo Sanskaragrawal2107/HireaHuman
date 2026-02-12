@@ -1,8 +1,8 @@
 
-import React, { useRef, useEffect } from 'react';
-import { useTamboThread, useTamboThreadInput, TamboProvider } from "@tambo-ai/react";
+import { useRef, useEffect } from 'react';
+import { useTambo, useTamboThreadInput, TamboProvider, MCPTransport } from "@tambo-ai/react";
 import { z } from "zod";
-import { X, Send, User, Bot, Loader2, CheckCircle, Shield, Code, MapPin, Briefcase } from 'lucide-react';
+import { X, Send, User, Bot, Loader2, CheckCircle, MapPin, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -77,14 +77,14 @@ const CandidateList = ({ candidates }: CandidateListProps) => {
 // ── Chat Interface ────────────────────────────────────────────────────
 
 const ChatInterface = ({ onClose }: { onClose: () => void }) => {
-    const { thread } = useTamboThread();
+    const { messages } = useTambo();
     const { value, setValue, submit, isPending } = useTamboThreadInput();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [thread.messages]);
+    }, [messages]);
 
     return (
         <div className="flex flex-col h-full bg-black text-white font-sans">
@@ -109,7 +109,7 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-                {thread.messages.length === 0 && (
+                {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center opacity-50 space-y-4">
                         <Bot className="w-12 h-12 text-zinc-700" />
                         <div className="space-y-1">
@@ -119,7 +119,7 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                     </div>
                 )}
 
-                {thread.messages.map((message) => (
+                {messages.map((message) => (
                     <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${message.role === 'user' ? 'bg-zinc-800' : 'bg-cyan-500/10'
                             }`}>
@@ -127,23 +127,26 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                         </div>
 
                         <div className={`flex flex-col gap-1 max-w-[85%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
-                            <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${message.role === 'user'
-                                ? 'bg-zinc-800 text-white rounded-tr-none'
-                                : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
-                                }`}>
-                                {message.content}
-                            </div>
-
-                            {/* Rendered Components */}
-                            {message.components && (
-                                <div className="w-full">
-                                    {message.components.map((comp: React.ReactNode, idx: number) => (
-                                        <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                            {comp}
+                            {message.content.map((block: any, idx: number) => {
+                                if (block.type === 'text') {
+                                    return (
+                                        <div key={idx} className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${message.role === 'user'
+                                            ? 'bg-zinc-800 text-white rounded-tr-none'
+                                            : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
+                                            }`}>
+                                            {block.text}
                                         </div>
-                                    ))}
-                                </div>
-                            )}
+                                    );
+                                }
+                                if (block.type === 'component' && block.renderedComponent) {
+                                    return (
+                                        <div key={idx} className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                            {block.renderedComponent}
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })}
                         </div>
                     </div>
                 ))}
@@ -205,9 +208,9 @@ export const RecruiterChatbot = ({ isOpen, onClose }: { isOpen: boolean; onClose
         {
             name: "hireahuman-mcp",
             url: "http://localhost:8000/sse",
-            transport: "sse"
+            transport: MCPTransport.SSE
         }
-    ] as any;
+    ];
 
     return (
         <AnimatePresence>
