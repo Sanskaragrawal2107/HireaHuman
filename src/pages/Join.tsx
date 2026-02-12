@@ -14,6 +14,8 @@ export const JoinPage = () => {
     const [magicLinkSent, setMagicLinkSent] = useState(false);
     const [error, setError] = useState('');
     const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const isLogin = location.pathname === '/login';
@@ -125,6 +127,46 @@ export const JoinPage = () => {
         setLoading(false);
     };
 
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (otp.length !== 6) {
+            setError('Please enter a valid 6-digit code');
+            return;
+        }
+        
+        setError('');
+        setVerifyingOtp(true);
+        
+        try {
+            // @ts-ignore
+            const { data, error } = await insforge.auth.verifyEmail({
+                email,
+                otp: otp
+            });
+            
+            if (error) {
+                if (error.message?.includes('Invalid') || error.message?.includes('expired')) {
+                    setError('Invalid or expired code. Please check the code or request a new one.');
+                } else {
+                    setError(error.message || 'Verification failed. Please try again.');
+                }
+                throw error;
+            }
+            
+            if (data) {
+                // Email verified successfully, now redirect to login
+                setError('Email verified successfully! You can now login.');
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            }
+        } catch (error: any) {
+            console.error(error);
+        } finally {
+            setVerifyingOtp(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-cyan-500/30">
             {/* Background Atmosphere */}
@@ -200,13 +242,55 @@ export const JoinPage = () => {
                         </div>
                     )}
 
-                    {/* Email Verification Message */}
+                    {/* OTP Verification Form */}
                     {needsEmailVerification && (
-                        <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded text-center">
-                            <h3 className="text-blue-400 font-bold mb-2 font-mono uppercase tracking-wider text-sm">Verify Your Email</h3>
-                            <p className="text-zinc-400 text-xs font-mono mb-2">We've sent a verification link to:</p>
-                            <p className="text-white font-mono text-xs mb-3">{email}</p>
-                            <p className="text-zinc-500 text-[10px] font-mono">Click the link in the email to activate your account, then come back to login.</p>
+                        <div className="space-y-4">
+                            <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded text-center">
+                                <h3 className="text-blue-400 font-bold mb-2 font-mono uppercase tracking-wider text-sm">Verify Your Email</h3>
+                                <p className="text-zinc-400 text-xs font-mono mb-2">We've sent a 6-digit verification code to:</p>
+                                <p className="text-white font-mono text-xs mb-3">{email}</p>
+                                <p className="text-zinc-500 text-[10px] font-mono">Enter the code below to activate your account.</p>
+                            </div>
+                            
+                            <form onSubmit={handleVerifyOtp} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="otp" className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Verification Code</label>
+                                    <input
+                                        id="otp"
+                                        type="text"
+                                        placeholder="000000"
+                                        value={otp}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                            setOtp(value);
+                                        }}
+                                        required
+                                        maxLength={6}
+                                        className="w-full bg-zinc-950/50 border border-zinc-700 rounded-none py-3 px-4 text-white text-center text-2xl font-mono tracking-[0.5em] placeholder:text-zinc-700 placeholder:tracking-normal placeholder:text-base focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
+                                    />
+                                </div>
+                                
+                                <button
+                                    type="submit"
+                                    disabled={verifyingOtp || otp.length !== 6}
+                                    className="w-full py-3 bg-zinc-900 border border-zinc-700 text-cyan-500 font-bold rounded-none hover:bg-cyan-500/10 hover:border-cyan-500 transition-all flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-xs font-mono group disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {verifyingOtp ? 'VERIFYING...' : 'VERIFY_EMAIL'}
+                                    {!verifyingOtp && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                </button>
+                                
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setNeedsEmailVerification(false);
+                                        setOtp('');
+                                        setError('');
+                                    }}
+                                    className="w-full text-[10px] text-zinc-500 hover:text-cyan-400 underline uppercase tracking-widest font-mono transition-colors"
+                                >
+                                    Use different email
+                                </button>
+                            </form>
                         </div>
                     )}
 

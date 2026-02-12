@@ -22,17 +22,19 @@ If you're seeing emails from "dateahuman" or an incorrect sender name, you need 
 - User enters email + password (with confirmation)
 - Password must be at least 6 characters
 - System creates account via `insforge.auth.signUp()`
-- If email verification is required:
-  - User receives verification email
-  - Must click link to verify
-  - Then can login
+- **Email verification is required:**
+  - User receives email with **6-digit OTP code**
+  - User enters code on verification page
+  - System verifies via `insforge.auth.verifyEmail({ email, otp })`
+  - On success: Redirects to login page
+  - User can then login with credentials
 
 ### 2. Login
 - User enters email + password
 - System authenticates via `insforge.auth.signInWithPassword()`
 - If email not verified:
   - Shows error message
-  - User must verify email first
+  - User must verify email with OTP first
 - On success: Redirects to `/profile`
 
 ### 3. Magic Link (Alternative)
@@ -40,6 +42,30 @@ If you're seeing emails from "dateahuman" or an incorrect sender name, you need 
 - Enter email only (no password)
 - Receive email with login link
 - Click link to auto-login
+
+## OTP Verification
+
+### How It Works
+1. After signup, user receives email with 6-digit code (e.g., 357570)
+2. Verification page appears automatically with OTP input field
+3. User enters the 6-digit code
+4. Code is validated via InsForge API
+5. On success: Email is verified and user can login
+6. On failure: Clear error message (invalid/expired code)
+
+### OTP Input Features
+- Only accepts numbers (no letters)
+- Automatically limits to 6 digits
+- Large, centered, monospace font for easy reading
+- Real-time validation
+- Submit button disabled until 6 digits entered
+- "Use different email" option to restart
+
+### Backend Configuration
+Your InsForge backend is configured with:
+- `verifyEmailMethod: "code"` (OTP-based verification)
+- `requireEmailVerification: true`
+- Codes expire after a certain time (check InsForge settings)
 
 ## Error Handling
 
@@ -63,11 +89,14 @@ If you're seeing emails from "dateahuman" or an incorrect sender name, you need 
 1. **New User Signup:**
    ```
    - Go to /join
-   - Enter email + password
-   - Confirm password
+   - Enter email + password + confirm password
    - Click SIGN_UP
-   - Check email for verification (if required)
-   - Verify and login
+   - Verification page appears with OTP input
+   - Check email for 6-digit code
+   - Enter code in verification form
+   - Click VERIFY_EMAIL
+   - Success: Redirects to /login
+   - Login with credentials
    ```
 
 2. **Existing User Login:**
@@ -93,6 +122,14 @@ If you're seeing emails from "dateahuman" or an incorrect sender name, you need 
    - Click SEND_MAGIC_LINK
    - Check email for link
    - Click link to auto-login
+   ```
+
+5. **Invalid OTP Code:**
+   ```
+   - Enter wrong 6-digit code
+   - Click VERIFY_EMAIL
+   - See error: "Invalid or expired code"
+   - Try again with correct code
    ```
 
 ## Environment Variables
