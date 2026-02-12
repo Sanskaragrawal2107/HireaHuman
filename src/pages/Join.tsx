@@ -138,7 +138,15 @@ export const JoinPage = () => {
                 </div>
 
                 <div className="text-center text-xs text-zinc-600 font-mono">
-                    System requires verification? <Link to="/join" className="text-cyan-500 hover:text-white transition-colors ml-1">LOGIN</Link>
+                    {isLogin ? (
+                        <>
+                            Need an account? <Link to="/join" className="text-cyan-500 hover:text-white transition-colors ml-1">SIGN UP</Link>
+                        </>
+                    ) : (
+                        <>
+                            Already have access? <Link to="/login" className="text-cyan-500 hover:text-white transition-colors ml-1">LOGIN</Link>
+                        </>
+                    )}
                 </div>
 
                 <p className="text-center text-[10px] text-zinc-700 leading-relaxed max-w-xs mx-auto font-mono mt-8 border-t border-zinc-800 pt-4">
