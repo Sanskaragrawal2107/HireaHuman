@@ -193,7 +193,7 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
 
 // ── Wrapper ───────────────────────────────────────────────────────────
 
-export const RecruiterChatbot = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean; onClose: () => void; userKey?: string }) => {
     // Register components
     const components = [{
         name: 'CandidateList',
@@ -207,7 +207,7 @@ export const RecruiterChatbot = ({ isOpen, onClose }: { isOpen: boolean; onClose
     const mcpServers = [
         {
             name: "hireahuman-mcp",
-            url: "http://localhost:8000/sse",
+            url: import.meta.env.VITE_MCP_SERVER_URL || "http://localhost:8000/sse",
             transport: MCPTransport.SSE
         }
     ];
@@ -235,6 +235,7 @@ export const RecruiterChatbot = ({ isOpen, onClose }: { isOpen: boolean; onClose
                     >
                         <TamboProvider
                             apiKey={import.meta.env.VITE_TAMBO_API_KEY || "demo"} // Placeholder if missing
+                            userKey={userKey || "guest-recruiter"}
                             components={components}
                             mcpServers={mcpServers}
                         >
