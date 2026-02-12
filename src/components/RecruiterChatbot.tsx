@@ -1,6 +1,6 @@
 
 import { useRef, useEffect } from 'react';
-import { useTambo, useTamboThreadInput, TamboProvider } from "@tambo-ai/react";
+import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus } from "@tambo-ai/react";
 import { z } from "zod";
 import { X, Send, User, Bot, Loader2, CheckCircle, MapPin, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,13 +11,13 @@ const CandidateSchema = z.object({
     candidates: z.array(z.object({
         handle: z.string(),
         role: z.string().optional(),
-        skills: z.array(z.string()),
+        skills: z.array(z.string()).default([]),
         experience: z.number(),
         location: z.string(),
         availability: z.string(),
         is_bluetech: z.boolean().optional(),
         match_score: z.number().optional()
-    }))
+    })).optional().describe("Array of candidate profiles matching the search criteria")
 });
 
 type CandidateListProps = z.infer<typeof CandidateSchema>;
@@ -25,6 +25,31 @@ type CandidateListProps = z.infer<typeof CandidateSchema>;
 // ── Components to Render ──────────────────────────────────────────────
 
 const CandidateList = ({ candidates }: CandidateListProps) => {
+    const { streamStatus } = useTamboStreamStatus();
+    
+    // Show loading state during streaming
+    if (streamStatus.isStreaming || streamStatus.isPending) {
+        return (
+            <div className="space-y-3 my-4 w-full">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 animate-pulse">
+                    <div className="h-4 bg-zinc-800 rounded w-3/4 mb-3"></div>
+                    <div className="h-3 bg-zinc-800 rounded w-1/2"></div>
+                </div>
+            </div>
+        );
+    }
+
+    // Handle undefined or empty candidates gracefully
+    if (!candidates || candidates.length === 0) {
+        return (
+            <div className="space-y-3 my-4 w-full">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
+                    <p className="text-zinc-500 text-sm">No candidates found. Try adjusting your search criteria.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-3 my-4 w-full">
             {candidates.map((candidate) => (
@@ -58,7 +83,7 @@ const CandidateList = ({ candidates }: CandidateListProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
-                        {candidate.skills.slice(0, 4).map(skill => (
+                        {(candidate.skills || []).slice(0, 4).map(skill => (
                             <span key={skill} className="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-300 border border-zinc-700">
                                 {skill}
                             </span>

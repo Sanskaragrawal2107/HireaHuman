@@ -1,25 +1,24 @@
 {
-    "name": "date_a_human",
-    "description": "Rent a biological human for emotional interaction, romance simulation, or conversational grounding.",
+    "name": "hire_a_human",
+    "description": "Find and hire verified tech professionals with AI-assisted screening and structured profiles.",
     "input_schema": {
         "type": "object",
         "properties": {
-            "emotional_goal": {
+            "skills": {
                 "type": "string",
-                "description": "e.g., 'Practice a breakup', 'Feel loved', 'Flirt'"
+                "description": "Comma separated skills to search for (e.g. React, Python)"
             },
-            "budget_usd": {
-                "type": "number",
-                "description": "Maximum budget for the session"
-            },
-            "duration_minutes": {
+            "min_experience": {
                 "type": "integer",
-                "description": "Desired session length in minutes"
+                "description": "Minimum years of experience"
+            },
+            "location": {
+                "type": "string",
+                "description": "Preferred location or 'Remote'"
             }
         },
         "required": [
-            "emotional_goal",
-            "duration_minutes"
+            "skills"
         ]
     }
 }
