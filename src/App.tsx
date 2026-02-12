@@ -2,11 +2,14 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { LandingPage } from './pages/Landing';
-import { BrowsePage } from './pages/Browse';
-import { JoinPage } from './pages/Join';
-import { ProfilePage } from './pages/Profile';
 import { DocsPage } from './pages/Docs';
+import { ProfilePage } from './pages/Profile';
 import { DashboardPage } from './pages/Dashboard';
+import { BrowsePage } from './pages/Browse'; // Assuming this exists based on list_dir
+import { JoinPage } from './pages/Join';
+import { VerifyCompanyPage } from './pages/VerifyCompany';
+import { RecruiterDashboard } from './pages/RecruiterDashboard';
+import { AdminPage } from './pages/Admin';
 
 const router = createBrowserRouter([
   {
@@ -15,7 +18,7 @@ const router = createBrowserRouter([
       <Layout>
         <LandingPage />
       </Layout>
-    ),
+    )
   },
   {
     path: "/browse",
@@ -23,7 +26,7 @@ const router = createBrowserRouter([
       <Layout>
         <BrowsePage />
       </Layout>
-    ),
+    )
   },
   {
     path: "/join",
@@ -31,29 +34,13 @@ const router = createBrowserRouter([
       <Layout>
         <JoinPage />
       </Layout>
-    ),
+    )
   },
   {
     path: "/docs",
     element: (
       <Layout>
         <DocsPage />
-      </Layout>
-    ),
-  },
-  {
-    path: "/dashboard",
-    element: (
-      <Layout>
-        <DashboardPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/login",
-    element: (
-      <Layout>
-        <JoinPage />
       </Layout>
     )
   },
@@ -66,10 +53,34 @@ const router = createBrowserRouter([
     )
   },
   {
-    path: "*",
+    path: "/dashboard",
     element: (
       <Layout>
-        <div className="flex items-center justify-center min-h-[50vh] text-zinc-500 font-mono">404: RESOURCE_NOT_FOUND</div>
+        <DashboardPage />
+      </Layout>
+    )
+  },
+  {
+    path: "/verify",
+    element: (
+      <Layout>
+        <VerifyCompanyPage />
+      </Layout>
+    )
+  },
+  {
+    path: "/recruiter-dashboard",
+    element: (
+      <Layout>
+        <RecruiterDashboard />
+      </Layout>
+    )
+  },
+  {
+    path: "/admin",
+    element: (
+      <Layout>
+        <AdminPage />
       </Layout>
     )
   }

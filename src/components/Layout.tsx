@@ -1,7 +1,7 @@
 
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Activity, Wifi, Terminal } from 'lucide-react';
+import { Activity, Wifi, Terminal } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -15,20 +15,21 @@ const Navbar = () => {
 
     const NAV_ITEMS = [
         { label: 'HOME', path: '/' },
-        { label: 'BROWSE_HEARTS', path: '/browse' },
-        { label: 'DOCS_FOR_AGENTS', path: '/docs' },
+        { label: 'FIND_TALENT', path: '/browse' },
+        { label: 'FOR_ENGINEERS', path: '/join' },
+        { label: 'PROTOCOL', path: '/docs' },
     ];
 
     return (
         <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800 h-16 flex items-center justify-between px-6 font-mono text-xs">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-                <div className="relative w-8 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-700 group-hover:border-pink-500 transition-colors">
-                    <Heart className="w-4 h-4 text-pink-500 fill-current animate-pulse" />
+                <div className="relative w-8 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-700 group-hover:border-cyan-500 transition-colors">
+                    <Terminal className="w-4 h-4 text-cyan-500 fill-current animate-pulse" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-bold tracking-widest text-white group-hover:text-pink-500 transition-colors">DATE_A_HUMAN</span>
-                    <span className="text-[10px] text-zinc-500">HEART_OS V2.4</span>
+                    <span className="font-bold tracking-widest text-white group-hover:text-cyan-500 transition-colors">HIRE_A_HUMAN</span>
+                    <span className="text-[10px] text-zinc-500">TALENT_OS V1.0</span>
                 </div>
             </Link>
 
@@ -39,15 +40,15 @@ const Navbar = () => {
                         key={item.label}
                         to={item.path}
                         className={cn(
-                            "relative py-1 tracking-widest hover:text-pink-500 transition-colors",
-                            location.pathname === item.path ? "text-pink-500 font-bold" : "text-zinc-500"
+                            "relative py-1 tracking-widest hover:text-cyan-500 transition-colors",
+                            location.pathname === item.path ? "text-cyan-500 font-bold" : "text-zinc-500"
                         )}
                     >
                         {item.label}
                         {location.pathname === item.path && (
                             <motion.div
                                 layoutId="underline"
-                                className="absolute left-0 right-0 bottom-0 h-[1px] bg-pink-500"
+                                className="absolute left-0 right-0 bottom-0 h-[1px] bg-cyan-500"
                             />
                         )}
                     </Link>
@@ -58,7 +59,7 @@ const Navbar = () => {
             <div className="flex items-center gap-4 text-zinc-600">
                 <div className="flex items-center gap-2 hidden md:flex">
                     <Activity className="w-3 h-3 text-green-500" />
-                    <span>CPU: 12%</span>
+                    <span>VERIFICATION: ACTIVE</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Wifi className="w-3 h-3 text-green-500" />
@@ -95,31 +96,32 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                 <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
                     <div className="space-y-4">
                         <div className="text-white font-bold mb-4 uppercase tracking-widest">System</div>
-                        <a href="#" className="block hover:text-pink-500 transition-colors">Status</a>
-                        <Link to="/docs" className="block hover:text-pink-500 transition-colors">API Docs</Link>
-                        <a href="/mcp.json" className="block hover:text-pink-500 transition-colors">MCP Server</a>
+                        <a href="#" className="block hover:text-cyan-500 transition-colors">Platform Status</a>
+                        <Link to="/docs" className="block hover:text-cyan-500 transition-colors">Integration Docs</Link>
+                        <a href="/mcp.json" className="block hover:text-cyan-500 transition-colors">MCP Server Config</a>
                     </div>
                     <div className="space-y-4">
                         <div className="text-white font-bold mb-4 uppercase tracking-widest">Protocols</div>
-                        <a href="#" className="block hover:text-pink-500 transition-colors">Emotional Stack</a>
-                        <a href="#" className="block hover:text-pink-500 transition-colors">LoveEscrow</a>
+                        <Link to="/verify" className="block hover:text-cyan-500 transition-colors">Level 3 Verification</Link>
+                        <a href="#" className="block hover:text-cyan-500 transition-colors">Talent Signal</a>
+                        <a href="#" className="block hover:text-cyan-500 transition-colors">Hiring State Lock</a>
                     </div>
                     <div className="space-y-4">
-                        <div className="text-white font-bold mb-4 uppercase tracking-widest">Human</div>
-                        <Link to="/join" className="block hover:text-pink-500 transition-colors flex items-center gap-2">
-                            Become a Heart <Terminal className="w-3 h-3" />
+                        <div className="text-white font-bold mb-4 uppercase tracking-widest">Access</div>
+                        <Link to="/join" className="block hover:text-cyan-500 transition-colors flex items-center gap-2">
+                            For Engineers <Terminal className="w-3 h-3" />
                         </Link>
-                        <Link to="/join" className="block hover:text-pink-500 transition-colors">Login</Link>
+                        <Link to="/verify" className="block hover:text-cyan-500 transition-colors">For Companies</Link>
                     </div>
                     <div className="space-y-4">
                         <div className="p-4 border border-zinc-800 text-zinc-400 italic">
-                            “Robots have fast processors. Humans have slow, beautiful feelings.”
+                            "Resume spam is a DDoS attack on human attention. We provide the firewall."
                         </div>
                     </div>
                 </div>
 
                 <div className="max-w-7xl mx-auto px-6 md:px-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center opacity-50">
-                    <div className="uppercase tracking-widest">Run by DateAHuman Inc.</div>
+                    <div className="uppercase tracking-widest">HireAHuman Inc.</div>
                     <div className="uppercase tracking-widest">EST. 2026 // SAN FRANCISCO + BANGALORE</div>
                 </div>
             </footer>

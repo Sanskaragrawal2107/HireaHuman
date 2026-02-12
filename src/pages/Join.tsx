@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { insforge } from '../lib/insforge';
 import { Link, useLocation } from 'react-router-dom';
-import { Heart, Chrome, Mail, ArrowRight } from 'lucide-react';
+import { Mail, ArrowRight, Terminal, Cpu } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const JoinPage = () => {
@@ -43,27 +43,36 @@ export const JoinPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-cyan-500/30">
             {/* Background Atmosphere */}
             <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-pink-600/10 rounded-full blur-[150px]" />
+                <div
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                        backgroundImage: 'linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)',
+                        backgroundSize: '40px 40px'
+                    }}
+                />
+                <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[150px]" />
                 <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[150px]" />
             </div>
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md z-10 space-y-8"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-md z-10 space-y-8 bg-zinc-900/40 backdrop-blur-md p-8 rounded-2xl border border-zinc-800 shadow-2xl relative overflow-hidden"
             >
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500" />
+
                 <div className="text-center space-y-4">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 mb-4 animate-pulse">
-                        <Heart className="w-6 h-6 text-pink-500 fill-current" />
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-950 border border-zinc-800 mb-2 shadow-[0_0_15px_rgba(6,182,212,0.1)] group">
+                        <Terminal className="w-8 h-8 text-cyan-500 group-hover:text-white transition-colors" />
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white capitalize">
-                        {isLogin ? 'welcome back' : 'join dateahuman'}
+                    <h1 className="text-3xl font-bold tracking-tighter text-white uppercase font-mono">
+                        {isLogin ? 'SYSTEM_ACCESS' : 'INITIALIZE_PROFILE'}
                     </h1>
-                    <p className="text-zinc-500">
-                        {isLogin ? 'login to continue' : 'create an account to get started'}
+                    <p className="text-zinc-500 text-sm font-mono">
+                        {isLogin ? 'Authenticate to continue session.' : 'Begin verification protocol.'}
                     </p>
                 </div>
 
@@ -72,18 +81,18 @@ export const JoinPage = () => {
                     <button
                         onClick={handleGoogleLogin}
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white text-black font-bold rounded-lg hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white text-black font-bold text-sm tracking-widest uppercase hover:bg-cyan-50 transition-colors disabled:opacity-50 font-mono shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
                     >
-                        <Chrome className="w-5 h-5" />
-                        continue with google
+                        <Cpu className="w-4 h-4" />
+                        Auth with Google
                     </button>
 
-                    <div className="relative">
+                    <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t border-zinc-800" />
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-black px-2 text-zinc-500">or</span>
+                        <div className="relative flex justify-center text-xs uppercase font-mono">
+                            <span className="bg-black/50 px-2 text-zinc-500 backdrop-blur">or use email token</span>
                         </div>
                     </div>
 
@@ -92,50 +101,48 @@ export const JoinPage = () => {
                         <form onSubmit={handleEmailLogin} className="space-y-4">
                             <div className="space-y-2">
                                 <label htmlFor="email" className="sr-only">Email</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                                <div className="relative group">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-cyan-500 transition-colors" />
                                     <input
                                         id="email"
                                         type="email"
-                                        placeholder="name@example.com"
+                                        placeholder="user@domain.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all font-mono"
+                                        className="w-full bg-zinc-950/50 border border-zinc-700 rounded-none py-3 pl-10 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono text-sm"
                                     />
                                 </div>
                             </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3 bg-zinc-900 border border-zinc-800 text-white font-bold rounded-lg hover:border-pink-500 hover:text-pink-500 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide text-xs group"
+                                className="w-full py-3 bg-zinc-900 border border-zinc-700 text-cyan-500 font-bold rounded-none hover:bg-cyan-500/10 hover:border-cyan-500 transition-all flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-xs font-mono group"
                             >
-                                {loading ? 'Sending...' : 'continue with email'}
+                                {loading ? 'PROCESSING...' : 'SEND_MAGIC_LINK'}
                                 {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                             </button>
                         </form>
                     ) : (
-                        <div className="p-6 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
-                            <h3 className="text-green-400 font-bold mb-2">Check your inbox!</h3>
-                            <p className="text-zinc-400 text-sm">We sent a magic link to <span className="text-white">{email}</span>.</p>
+                        <div className="p-6 bg-green-500/5 border border-green-500/20 rounded text-center">
+                            <h3 className="text-green-400 font-bold mb-2 font-mono uppercase tracking-wider">Link Dispatched</h3>
+                            <p className="text-zinc-400 text-xs font-mono mb-4">Check inbox for access token: <span className="text-white block mt-1">{email}</span></p>
                             <button
                                 onClick={() => setMagicLinkSent(false)}
-                                className="mt-4 text-xs text-zinc-500 hover:text-white underline"
+                                className="text-[10px] text-zinc-500 hover:text-cyan-400 underline uppercase tracking-widest font-mono"
                             >
-                                Try different email
+                                Retry different address
                             </button>
                         </div>
                     )}
                 </div>
 
-                <div className="text-center text-sm text-zinc-500">
-                    already have an account? <Link to="/join" className="text-white hover:text-pink-500 font-bold ml-1 transition-colors">login</Link>
+                <div className="text-center text-xs text-zinc-600 font-mono">
+                    System requires verification? <Link to="/join" className="text-cyan-500 hover:text-white transition-colors ml-1">LOGIN</Link>
                 </div>
 
-                <p className="text-center text-xs text-zinc-600 leading-relaxed max-w-xs mx-auto">
-                    by signing up you agree to our <a href="#" className="underline hover:text-zinc-400">terms of service</a> and <a href="#" className="underline hover:text-zinc-400">privacy policy</a>.
-                    <br />
-                    <span className="block mt-4 opacity-50 font-mono tracking-widest uppercase">to initialize profile</span>
+                <p className="text-center text-[10px] text-zinc-700 leading-relaxed max-w-xs mx-auto font-mono mt-8 border-t border-zinc-800 pt-4">
+                    By initializing, you agree to Protocol <a href="#" className="underline hover:text-cyan-500">Terms</a> & <a href="#" className="underline hover:text-cyan-500">Privacy</a>.
                 </p>
             </motion.div>
         </div>

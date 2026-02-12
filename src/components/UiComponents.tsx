@@ -4,75 +4,60 @@ import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { insforge } from '../lib/insforge';
+import { MapPin, Briefcase, Zap, Github, ExternalLink } from 'lucide-react';
 
-// Helper for class names
 function cn(...inputs: (string | undefined | null)[]): string {
     return twMerge(clsx(inputs));
 }
 
 const METRICS = [
-    { id: 'hearts', label: 'Hearts Rentable', value: 14203, suffix: '', change: '+3' },
-    { id: 'active', label: 'Active Romances', value: 842, suffix: '', change: '-12' },
-    { id: 'dopamine', label: 'Dopamine Gen', value: 4.2, suffix: 'TB', change: '+0.1' },
-    { id: 'escrow', label: 'USD in Escrow', value: 12599, suffix: '$', change: '+$240' },
-    { id: 'latency', label: 'Avg Latency', value: 45, suffix: 'ms', change: '-2ms' },
+    { id: 'engineers', label: 'Engineers Indexed', value: 0, suffix: '', change: '+0' },
+    { id: 'companies', label: 'Companies Verified', value: 0, suffix: '', change: '+0' },
+    { id: 'available', label: 'Available Now', value: 0, suffix: '', change: '' },
+    { id: 'bluetech', label: 'BlueTech Members', value: 0, suffix: '', change: '' },
 ];
 
 export const LiveMetrics = () => {
-    // Start with mock but override with real data
     const [metrics, setMetrics] = useState(METRICS);
 
     useEffect(() => {
         const fetchRealStats = async () => {
             try {
-                // 1. Count Total Hearts
-                const { count: heartCount } = await insforge.database
+                // Count profiles
+                const { count: engineerCount } = await insforge.database
                     .from('profiles')
                     .select('*', { count: 'exact', head: true });
 
-                // 2. Count Active Sessions
-                const { count: sessionCount } = await insforge.database
-                    .from('sessions')
+                // Count verified companies
+                const { count: companyCount } = await insforge.database
+                    .from('companies')
                     .select('*', { count: 'exact', head: true });
 
-                // 3. Sum Prices (Escrow) - Requires a stored procedure or just fetching all prices
-                // For performance, let's just fetch active sessions prices
-                const { data: sessionData } = await insforge.database
-                    .from('sessions')
-                    .select('price');
+                // Count available engineers
+                const { count: availableCount } = await insforge.database
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('employment_status', 'AVAILABLE');
 
-                const escrowTotal = sessionData?.reduce((acc: number, curr: { price: number }) => acc + (curr.price || 0), 0) || 12599;
+                // Count bluetech members
+                const { count: bluetechCount } = await insforge.database
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('bluetech_badge', true);
 
                 setMetrics(prev => prev.map(m => {
-                    if (m.id === 'hearts' && heartCount !== null) return { ...m, value: heartCount + 14000 }; // Boost for optics + real
-                    if (m.id === 'active' && sessionCount !== null) return { ...m, value: sessionCount + 800 };
-                    if (m.id === 'escrow') return { ...m, value: escrowTotal };
+                    if (m.id === 'engineers' && engineerCount !== null) return { ...m, value: engineerCount };
+                    if (m.id === 'companies' && companyCount !== null) return { ...m, value: companyCount };
+                    if (m.id === 'available' && availableCount !== null) return { ...m, value: availableCount };
+                    if (m.id === 'bluetech' && bluetechCount !== null) return { ...m, value: bluetechCount };
                     return m;
                 }));
-
             } catch (err) {
                 console.error("Failed to fetch live metrics", err);
             }
         };
 
         fetchRealStats();
-
-        // Animate
-        const interval = setInterval(() => {
-            setMetrics(prev => prev.map(m => {
-                if (Math.random() > 0.7) {
-                    const delta = Math.floor(Math.random() * 5) - 2;
-                    // Keep value > 0
-                    // value is always number in our initial state
-                    const currentVal = m.value;
-                    const newValue = Math.max(0, currentVal + (delta * (m.id === 'dopamine' ? 0.1 : 1)));
-                    return { ...m, value: newValue };
-                }
-                return m;
-            }));
-        }, 2000); // Update every 2s
-
-        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -82,89 +67,131 @@ export const LiveMetrics = () => {
                     <div key={metric.id} className="flex items-center space-x-2 shrink-0 group hover:bg-zinc-900/50 px-2 py-1 rounded transition-colors cursor-default">
                         <span className="text-zinc-500">{metric.label}:</span>
                         <span className="text-white font-bold group-hover:text-cyan-400">
-                            {typeof metric.value === 'number' && metric.suffix !== 'TB'
-                                ? Math.floor(metric.value).toLocaleString()
-                                : metric.value.toFixed(1)}
+                            {Math.floor(metric.value).toLocaleString()}
                             {metric.suffix}
-                        </span>
-                        <span className={cn(
-                            "text-[10px]",
-                            metric.change.startsWith('+') ? "text-green-500" : "text-red-500"
-                        )}>
-                            {metric.change}
                         </span>
                     </div>
                 ))}
-                {/* Duplicate for seamless loop if needed - simplified here */}
             </div>
         </div>
     );
 };
 
-export const HeartCard = ({ profile }: { profile: any }) => {
-    // profile: { id, handle, display_name, bio, price, avatar_url, specialties, is_online, latency_ms }
+export const EngineerCard = ({ profile }: { profile: any }) => {
+    const skills = profile.skills || [];
+    const yearsExp = profile.years_of_experience || 0;
+
+    const getExpLevel = (years: number) => {
+        if (years >= 8) return 'SENIOR+';
+        if (years >= 5) return 'SENIOR';
+        if (years >= 3) return 'MID';
+        if (years >= 1) return 'JUNIOR';
+        return 'ENTRY';
+    };
 
     return (
         <motion.div
-            whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(0, 255, 255, 0.1)' }}
-            className="relative bg-zinc-900/50 border border-zinc-800 rounded-none overflow-hidden hover:border-cyan-500 transition-colors group h-full flex flex-col"
+            whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(6, 182, 212, 0.1)' }}
+            className="relative bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-colors group h-full flex flex-col"
         >
-            {/* Online Status Marker */}
-            <div className={cn(
-                "absolute top-2 right-2 w-2 h-2 rounded-full z-10",
-                profile.is_online ? "bg-green-500 animate-pulse box-shadow-green" : "bg-zinc-700"
-            )} />
+            {/* Status Badge */}
+            <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+                {profile.bluetech_badge && (
+                    <span className="px-2 py-0.5 bg-blue-500/20 border border-blue-500/50 text-blue-400 text-[10px] font-mono rounded flex items-center gap-1">
+                        <Zap className="w-3 h-3" /> BLUETECH
+                    </span>
+                )}
+                <span className={cn(
+                    "font-mono text-[10px] px-2 py-0.5 rounded bg-black/50 border",
+                    profile.employment_status === 'AVAILABLE'
+                        ? "text-green-500 border-green-500/30"
+                        : "text-red-500 border-red-500/30"
+                )}>
+                    <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1",
+                        profile.employment_status === 'AVAILABLE' ? "bg-green-500 animate-pulse" : "bg-red-500"
+                    )} />
+                    {profile.employment_status || 'AVAILABLE'}
+                </span>
+            </div>
 
+            {/* Header */}
             <div className="p-4 border-b border-zinc-800 flex items-center space-x-4 bg-zinc-950/30">
                 <div className="relative">
                     <img
-                        src={profile.avatar_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.handle}`}
+                        src={profile.avatar_url || `https://api.dicebear.com/7.x/shapes/svg?seed=${profile.handle || 'user'}`}
                         alt={profile.handle}
-                        className="w-12 h-12 rounded-full border border-zinc-700 object-cover bg-black"
+                        className="w-14 h-14 rounded-lg border border-zinc-700 object-cover bg-black"
                     />
-                    {/* Heartbeat Overlay */}
-                    <div className="absolute inset-0 rounded-full border border-pink-500 opacity-0 group-hover:opacity-100 group-hover:animate-ping pointer-events-none" />
                 </div>
-                <div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-cyan-400 font-mono tracking-tight">
-                        {profile.display_name}
+                <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-white group-hover:text-cyan-400 font-mono tracking-tight truncate">
+                        {profile.display_name || 'Anonymous Engineer'}
                     </h3>
-                    <p className="text-xs text-zinc-500">UID: {profile.handle}</p>
+                    <p className="text-xs text-cyan-500/80 font-mono">@{profile.handle || 'unknown'}</p>
+                    {profile.role_title && (
+                        <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
+                            <Briefcase className="w-3 h-3" /> {profile.role_title}
+                        </p>
+                    )}
                 </div>
             </div>
 
             <div className="p-4 space-y-4 flex-grow flex flex-col justify-between">
                 <div>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                        {profile.specialties?.map((tag: string) => (
-                            <span key={tag} className="px-1.5 py-0.5 bg-zinc-800 text-[10px] text-zinc-400 uppercase tracking-widest border border-transparent group-hover:border-zinc-700 transition-colors">
-                                {tag}
+                    {/* Location */}
+                    {profile.location && (
+                        <p className="text-xs text-zinc-500 flex items-center gap-1 mb-3">
+                            <MapPin className="w-3 h-3" /> {profile.location}
+                        </p>
+                    )}
+
+                    {/* Skills */}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                        {skills.slice(0, 5).map((skill: string) => (
+                            <span key={skill} className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-mono rounded">
+                                {skill}
                             </span>
                         ))}
+                        {skills.length > 5 && (
+                            <span className="px-2 py-0.5 text-[10px] text-zinc-600 font-mono">+{skills.length - 5}</span>
+                        )}
                     </div>
-                    <p className="text-sm text-zinc-400 line-clamp-3 font-sans leading-relaxed">
-                        "{profile.bio}"
+
+                    {/* Bio */}
+                    <p className="text-sm text-zinc-400 line-clamp-2 font-sans leading-relaxed">
+                        {profile.bio || 'No bio provided.'}
                     </p>
                 </div>
 
+                {/* Footer */}
                 <div className="pt-4 border-t border-zinc-800/50 mt-4 flex items-center justify-between font-mono text-xs">
                     <div className="text-zinc-500">
-                        LATENCY: <span className="text-green-400">{profile.latency_ms}ms</span>
+                        EXP: <span className="text-white">{getExpLevel(yearsExp)}</span>
+                        <span className="text-zinc-700 ml-1">({yearsExp}y)</span>
                     </div>
-                    <div className="text-right">
-                        <span className="block text-zinc-500 text-[10px] uppercase">Rate / 15m</span>
-                        <span className="text-lg font-bold text-white group-hover:text-pink-500 transition-colors">
-                            ${profile.price_per_15min}
-                        </span>
+                    <div className="flex items-center gap-2">
+                        {profile.github_url && (
+                            <a href={profile.github_url} target="_blank" rel="noreferrer" className="text-zinc-600 hover:text-white transition-colors" onClick={e => e.stopPropagation()}>
+                                <Github className="w-4 h-4" />
+                            </a>
+                        )}
+                        {profile.resume_url && (
+                            <a href={profile.resume_url} target="_blank" rel="noreferrer" className="text-zinc-600 hover:text-cyan-500 transition-colors" onClick={e => e.stopPropagation()}>
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
 
             <button
-                onClick={() => alert(`INITIATING HANDSHAKE PROTOCOL WITH [${profile.handle}]...\nEstimated Wait: ${profile.latency_ms}ms\nEscrow Amount: $${profile.price_per_15min}`)}
+                onClick={() => {
+                    const detail = `Engineer: ${profile.display_name}\nRole: ${profile.role_title || 'N/A'}\nSkills: ${skills.join(', ')}\nExperience: ${yearsExp} years\nStatus: ${profile.employment_status || 'AVAILABLE'}`;
+                    alert(`CANDIDATE PROFILE\n${'─'.repeat(30)}\n${detail}\n\nContact via platform to schedule interview.`);
+                }}
                 className="w-full py-3 bg-zinc-900 border-t border-zinc-800 text-xs uppercase tracking-[0.2em] hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/50 transition-all font-bold relative overflow-hidden group/btn"
             >
-                <span className="relative z-10">Initialize_Link</span>
+                <span className="relative z-10">View_Profile</span>
                 <div className="absolute inset-0 bg-cyan-500/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
             </button>
         </motion.div>
