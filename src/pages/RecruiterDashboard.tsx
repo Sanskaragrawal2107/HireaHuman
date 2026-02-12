@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Settings, Clock, CheckCircle, XCircle, Building2, Users, Briefcase, ExternalLink, Globe, Loader2, LogOut, ChevronRight, BarChart3, FileText, Shield } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
+import { RecruiterChatbot } from '../components/RecruiterChatbot';
 
 export const RecruiterDashboard = () => {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export const RecruiterDashboard = () => {
     const [profileCount, setProfileCount] = useState(0);
     const [description, setDescription] = useState('');
     const [savingDesc, setSavingDesc] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     useEffect(() => {
         const fetchCompany = async () => {
@@ -97,8 +99,8 @@ export const RecruiterDashboard = () => {
                     <div className="flex items-center gap-3">
                         {/* Status Badge */}
                         <div className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${status === 'verified' ? 'bg-green-50 text-green-700 border border-green-200' :
-                                status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                                    'bg-red-50 text-red-700 border border-red-200'
+                            status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                'bg-red-50 text-red-700 border border-red-200'
                             }`}>
                             {status === 'verified' ? <CheckCircle className="w-3.5 h-3.5" /> :
                                 status === 'pending' ? <Clock className="w-3.5 h-3.5" /> :
@@ -265,16 +267,16 @@ export const RecruiterDashboard = () => {
                                     : 'Complete verification to access the talent directory.'
                                 }
                             </p>
-                            <Link
-                                to={isVerified ? '/browse' : '#'}
+                            <button
+                                onClick={() => isVerified && setIsChatOpen(true)}
+                                disabled={!isVerified}
                                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all ${isVerified
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20'
-                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20'
+                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                     }`}
-                                onClick={e => !isVerified && e.preventDefault()}
                             >
-                                {isVerified ? <><Users className="w-4 h-4" /> Search Engineers</> : <><Shield className="w-4 h-4" /> Verification Required</>}
-                            </Link>
+                                {isVerified ? <><Users className="w-4 h-4" /> AI Talent Search</> : <><Shield className="w-4 h-4" /> Verification Required</>}
+                            </button>
                         </div>
 
                         {/* Quick Links */}
@@ -324,8 +326,11 @@ export const RecruiterDashboard = () => {
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <RecruiterChatbot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+        </div >
     );
 };

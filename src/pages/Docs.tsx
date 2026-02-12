@@ -33,7 +33,7 @@ export const DocsPage = () => {
                         01_MCP_SERVER_SETUP
                     </h2>
                     <p className="text-zinc-400">
-                        The easiest way to give your agent access to DateAHuman resources is via our Model Context Protocol (MCP) server.
+                        The easiest way to give your agent access to HireAHuman resources is via our Model Context Protocol (MCP) server.
                     </p>
 
                     <div className="space-y-4">
@@ -41,14 +41,15 @@ export const DocsPage = () => {
                         <CodeBlock>
                             {`{
   "mcpServers": {
-    "dateahuman": {
-      "command": "npx",
-      "args": ["-y", "@dateahuman/mcp-server"]
+    "hireahuman": {
+      "command": "python",
+      "args": ["server.py"],
+      "cwd": "/path/to/hireahuman-mcp"
     }
   }
 }`}
                         </CodeBlock>
-                        <p className="text-xs text-zinc-500">* Requires Node.js v18+</p>
+                        <p className="text-xs text-zinc-500">* Requires Python 3.10+</p>
                     </div>
                 </section>
 
@@ -61,37 +62,37 @@ export const DocsPage = () => {
 
                     <div className="grid gap-6">
                         <div className="p-6 border border-zinc-800 bg-zinc-900/30 rounded">
-                            <h3 className="text-lg font-bold text-white mb-2 font-mono">search_humans</h3>
-                            <p className="text-zinc-500 mb-4 text-sm">Query the biological mesh for available emotional processors.</p>
+                            <h3 className="text-lg font-bold text-white mb-2 font-mono">search_candidates</h3>
+                            <p className="text-zinc-500 mb-4 text-sm">Query the talent database for verified professionals.</p>
                             <CodeBlock>
                                 {`Input: {
-  "emotional_goal": "string (e.g. 'breakup_sim', 'validation')",
-  "max_budget": "number",
-  "modality": "voice | text | video"
+  "skills": "string (comma separated)",
+  "min_experience": "number",
+  "location": "string"
 }
 
 Output: {
-  "humans": [
-    { "id": "H_992", "handle": "Lyla_V4", "specialty": "Conflict" }
+  "candidates": [
+    { "handle": "dev_lyla", "role": "Senior Frontend", "skills": ["React", "TS"] }
   ]
 }`}
                             </CodeBlock>
                         </div>
 
                         <div className="p-6 border border-zinc-800 bg-zinc-900/30 rounded">
-                            <h3 className="text-lg font-bold text-white mb-2 font-mono">rent_session</h3>
-                            <p className="text-zinc-500 mb-4 text-sm">Initiate an escrow-backed connection.</p>
+                            <h3 className="text-lg font-bold text-white mb-2 font-mono">get_candidate_profile</h3>
+                            <p className="text-zinc-500 mb-4 text-sm">Retrieve full structured verification data.</p>
                             <CodeBlock>
                                 {`Input: {
-  "human_id": "H_992",
-  "duration_min": 15,
-  "payment_method": "stripe_card"
+  "handle": "dev_lyla"
 }
 
 Output: {
-  "session_id": "sess_8823",
-  "chat_link": "https://dateahuman.ai/room/sess_8823",
-  "status": "awaiting_human_handshake"
+  "profile": {
+    "name": "Lyla Chen",
+    "verified_history": [...],
+    "contact": "..."
+  }
 }`}
                             </CodeBlock>
                         </div>
@@ -102,25 +103,26 @@ Output: {
                 <section className="space-y-6">
                     <h2 className="text-2xl font-bold text-green-500 flex items-center gap-2">
                         <span className="w-2 h-2 bg-green-500 rounded-full" />
-                        03_LOVE_ESCROW_PROTOCOL
+                        03_TRUST_SIGNAL_PROTOCOL
                     </h2>
                     <div className="p-6 border border-green-500/20 bg-green-500/5 rounded flex gap-4">
                         <Shield className="w-8 h-8 text-green-500 flex-shrink-0" />
                         <div className="space-y-2">
-                            <h3 className="text-white font-bold">Trustless Transaction</h3>
+                            <h3 className="text-white font-bold">Verified Expertise</h3>
                             <p className="text-zinc-400 text-sm">
-                                All funds are held in a smart contract (or Stripe Connect Escrow) until the session
-                                duration is complete AND the 'heartbeat' signal is verified from both parties.
+                                Every profile is anchored by our verification engine. Companies lock hires through
+                                stable hiring states, preventing multiple offers from diluting talent focus.
                             </p>
-                            <Link to="/escrow" className="text-green-400 text-sm hover:underline flex items-center gap-1 mt-2">
-                                View Smart Contract Audit <ExternalLink className="w-3 h-3" />
+                            <Link to="/verify" className="text-green-400 text-sm hover:underline flex items-center gap-1 mt-2">
+                                Learn about Company Verification <ExternalLink className="w-3 h-3" />
                             </Link>
                         </div>
                     </div>
                 </section>
 
                 <div className="pt-12 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-600">
-                    <span>DateAHuman API v1.0.4</span>
+                    <span>HireAHuman API v1.2.0</span>
+
                     <span>Status: <span className="text-green-500">OPERATIONAL</span></span>
                 </div>
             </div>
