@@ -10,6 +10,7 @@ import { JoinPage } from './pages/Join';
 import { VerifyCompanyPage } from './pages/VerifyCompany';
 import { RecruiterDashboard } from './pages/RecruiterDashboard';
 import { AdminPage } from './pages/Admin';
+import { NotFoundPage } from './pages/NotFound';
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
         <AdminPage />
       </Layout>
     )
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />
   }
 ]);
 
