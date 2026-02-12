@@ -1,6 +1,42 @@
 # Bug Fixes Summary - HireAHuman
 
-## Fixed Issues
+## Latest Updates (February 12, 2026)
+
+### 🎉 NEW FEATURES ADDED
+
+#### 1. ✅ Fullscreen Mode
+**Feature:** Toggle between sidebar and fullscreen mode for better chatbot experience
+
+**Implementation:**
+- Added fullscreen toggle button in chat header
+- Dynamic layout switching between drawer (max-w-md) and fullscreen (full viewport)
+- Smooth transitions with Framer Motion
+- Minimize2/Maximize2 icons from Lucide React
+
+#### 2. ✅ Tool Call Visibility (Agent Actions)
+**Feature:** Show what the AI agent is doing in real-time
+
+**Implementation:**
+Based on latest Tambo.ai documentation:
+- Display `tool_use` blocks with tool name and parameters
+- Display `tool_result` blocks with success indicators
+- Real-time visual feedback with animated icons
+- Color-coded blocks:
+  - Amber: Tool in use (with wrench icon)
+  - Green: Tool completed (with check icon)
+
+#### 3. ✅ Improved Text Rendering
+**Feature:** Better text display with proper formatting
+
+**Implementation:**
+- Added `whitespace-pre-wrap` for preserving line breaks
+- Added `break-words` for proper word wrapping
+- Better spacing between message blocks (gap-2)
+- Improved readability with proper text sizing
+
+---
+
+## Previous Fixes
 
 ### 1. ✅ CandidateList Component Error (CRITICAL BUG)
 **Error:** `TypeError: Cannot read properties of undefined (reading 'map')`

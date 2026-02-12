@@ -1,8 +1,8 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus } from "@tambo-ai/react";
 import { z } from "zod";
-import { X, Send, User, Bot, Loader2, CheckCircle, MapPin, Briefcase } from 'lucide-react';
+import { X, Send, User, Bot, Loader2, CheckCircle, MapPin, Briefcase, Maximize2, Minimize2, Wrench, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ const CandidateList = ({ candidates }: CandidateListProps) => {
 
 // ── Chat Interface ────────────────────────────────────────────────────
 
-const ChatInterface = ({ onClose }: { onClose: () => void }) => {
+const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: () => void; isFullscreen: boolean; toggleFullscreen: () => void }) => {
     const { messages } = useTambo();
     const { value, setValue, submit, isPending } = useTamboThreadInput();
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -127,9 +127,18 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                         </div>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors">
-                    <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={toggleFullscreen}
+                        className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                        title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                    >
+                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
+                    <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             {/* Messages */}
@@ -151,11 +160,12 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                             {message.role === 'user' ? <User className="w-4 h-4 text-zinc-400" /> : <Bot className="w-4 h-4 text-cyan-500" />}
                         </div>
 
-                        <div className={`flex flex-col gap-1 max-w-[85%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+                        <div className={`flex flex-col gap-2 max-w-[85%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
                             {message.content.map((block: any, idx: number) => {
+                                // Render text content
                                 if (block.type === 'text') {
                                     return (
-                                        <div key={idx} className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${message.role === 'user'
+                                        <div key={idx} className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${message.role === 'user'
                                             ? 'bg-zinc-800 text-white rounded-tr-none'
                                             : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
                                             }`}>
@@ -163,6 +173,39 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                                         </div>
                                     );
                                 }
+                                
+                                // Render tool use (agent actions)
+                                if (block.type === 'tool_use') {
+                                    return (
+                                        <div key={idx} className="w-full">
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                                <Wrench className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                                                <div className="flex-1">
+                                                    <p className="text-xs text-amber-300 font-medium">Using tool: {block.name}</p>
+                                                    {block.input && (
+                                                        <p className="text-[10px] text-amber-400/70 mt-0.5 font-mono">
+                                                            {JSON.stringify(block.input).substring(0, 100)}{JSON.stringify(block.input).length > 100 ? '...' : ''}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                
+                                // Render tool results
+                                if (block.type === 'tool_result') {
+                                    return (
+                                        <div key={idx} className="w-full">
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                                <p className="text-xs text-green-300">Tool completed successfully</p>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                
+                                // Render components
                                 if (block.type === 'component' && block.renderedComponent) {
                                     return (
                                         <div key={idx} className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -170,6 +213,7 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                                         </div>
                                     );
                                 }
+                                
                                 return null;
                             })}
                         </div>
@@ -219,6 +263,8 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
 // ── Wrapper ───────────────────────────────────────────────────────────
 
 export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean; onClose: () => void; userKey?: string }) => {
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    
     // Register components
     const components = [{
         name: 'CandidateList',
@@ -226,6 +272,8 @@ export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean
         component: CandidateList,
         propsSchema: CandidateSchema
     }];
+
+    const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
 
     return (
         <AnimatePresence>
@@ -240,20 +288,28 @@ export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
                     />
 
-                    {/* Drawer */}
+                    {/* Drawer/Fullscreen */}
                     <motion.div
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-black border-l border-zinc-800 shadow-2xl z-[101]"
+                        className={`fixed top-0 bottom-0 bg-black shadow-2xl z-[101] ${
+                            isFullscreen 
+                                ? 'left-0 right-0 border-none' 
+                                : 'right-0 w-full max-w-md border-l border-zinc-800'
+                        }`}
                     >
                         <TamboProvider
                             apiKey={import.meta.env.VITE_TAMBO_API_KEY || "demo"} // Placeholder if missing
                             userKey={userKey || "guest-recruiter"}
                             components={components}
                         >
-                            <ChatInterface onClose={onClose} />
+                            <ChatInterface 
+                                onClose={onClose} 
+                                isFullscreen={isFullscreen}
+                                toggleFullscreen={toggleFullscreen}
+                            />
                         </TamboProvider>
                     </motion.div >
                 </>
