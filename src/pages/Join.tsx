@@ -1,15 +1,19 @@
 
 import React, { useState } from 'react';
 import { insforge } from '../lib/insforge';
-import { Link, useLocation } from 'react-router-dom';
-import { Mail, ArrowRight, Terminal, Cpu } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Mail, ArrowRight, Terminal, Cpu, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const JoinPage = () => {
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [useMagicLink, setUseMagicLink] = useState(false);
     const [magicLinkSent, setMagicLinkSent] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const isLogin = location.pathname === '/login';
 
     const handleGoogleLogin = async () => {
@@ -22,10 +26,54 @@ export const JoinPage = () => {
         setLoading(false);
     };
 
-    const handleEmailLogin = async (e: React.FormEvent) => {
+    const handlePasswordAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Using generic signIn if signInWithOtp is missing in types
+        
+        try {
+            if (isLogin) {
+                // Login with password
+                const { data, error } = await insforge.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                if (error) throw error;
+                if (data?.user) {
+                    navigate('/profile');
+                }
+            } else {
+                // Sign up with password
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    setLoading(false);
+                    return;
+                }
+                if (password.length < 6) {
+                    alert('Password must be at least 6 characters long');
+                    setLoading(false);
+                    return;
+                }
+                
+                const { data, error } = await insforge.auth.signUp({
+                    email,
+                    password
+                });
+                if (error) throw error;
+                if (data?.user) {
+                    navigate('/profile');
+                }
+            }
+        } catch (error: any) {
+            console.error(error);
+            alert(error.message || 'Authentication failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMagicLink = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
         // @ts-ignore
         const { error } = await insforge.auth.signIn({
             email,
@@ -92,13 +140,13 @@ export const JoinPage = () => {
                             <span className="w-full border-t border-zinc-800" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase font-mono">
-                            <span className="bg-black/50 px-2 text-zinc-500 backdrop-blur">or use email token</span>
+                            <span className="bg-black/50 px-2 text-zinc-500 backdrop-blur">or use email</span>
                         </div>
                     </div>
 
-                    {/* Email Form */}
+                    {/* Email/Password Form */}
                     {!magicLinkSent ? (
-                        <form onSubmit={handleEmailLogin} className="space-y-4">
+                        <form onSubmit={useMagicLink ? handleMagicLink : handlePasswordAuth} className="space-y-4">
                             <div className="space-y-2">
                                 <label htmlFor="email" className="sr-only">Email</label>
                                 <div className="relative group">
@@ -114,13 +162,65 @@ export const JoinPage = () => {
                                     />
                                 </div>
                             </div>
+                            
+                            {/* Password fields - only show if not using magic link */}
+                            {!useMagicLink && (
+                                <>
+                                    <div className="space-y-2">
+                                        <label htmlFor="password" className="sr-only">Password</label>
+                                        <div className="relative group">
+                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-cyan-500 transition-colors" />
+                                            <input
+                                                id="password"
+                                                type="password"
+                                                placeholder="••••••••"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                minLength={6}
+                                                className="w-full bg-zinc-950/50 border border-zinc-700 rounded-none py-3 pl-10 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Confirm Password - only for signup */}
+                                    {!isLogin && (
+                                        <div className="space-y-2">
+                                            <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+                                            <div className="relative group">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-cyan-500 transition-colors" />
+                                                <input
+                                                    id="confirmPassword"
+                                                    type="password"
+                                                    placeholder="Confirm password"
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    required
+                                                    minLength={6}
+                                                    className="w-full bg-zinc-950/50 border border-zinc-700 rounded-none py-3 pl-10 pr-4 text-white placeholder:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                            
                             <button
                                 type="submit"
                                 disabled={loading}
                                 className="w-full py-3 bg-zinc-900 border border-zinc-700 text-cyan-500 font-bold rounded-none hover:bg-cyan-500/10 hover:border-cyan-500 transition-all flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-xs font-mono group"
                             >
-                                {loading ? 'PROCESSING...' : 'SEND_MAGIC_LINK'}
+                                {loading ? 'PROCESSING...' : (useMagicLink ? 'SEND_MAGIC_LINK' : (isLogin ? 'LOGIN' : 'SIGN_UP'))}
                                 {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                            </button>
+                            
+                            {/* Toggle for magic link */}
+                            <button
+                                type="button"
+                                onClick={() => setUseMagicLink(!useMagicLink)}
+                                className="w-full text-[10px] text-zinc-500 hover:text-cyan-400 underline uppercase tracking-widest font-mono transition-colors"
+                            >
+                                {useMagicLink ? 'Use password instead' : 'Use magic link instead'}
                             </button>
                         </form>
                     ) : (
