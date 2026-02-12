@@ -1,6 +1,6 @@
 
 import { useRef, useEffect } from 'react';
-import { useTambo, useTamboThreadInput, TamboProvider, MCPTransport } from "@tambo-ai/react";
+import { useTambo, useTamboThreadInput, TamboProvider } from "@tambo-ai/react";
 import { z } from "zod";
 import { X, Send, User, Bot, Loader2, CheckCircle, MapPin, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -202,16 +202,6 @@ export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean
         propsSchema: CandidateSchema
     }];
 
-    // Configure MCP Servers
-    // In production, this URL should point to your deployed MCP server endpoint
-    const mcpServers = [
-        {
-            name: "hireahuman-mcp",
-            url: import.meta.env.VITE_MCP_SERVER_URL || "http://localhost:8000/sse",
-            transport: MCPTransport.SSE
-        }
-    ];
-
     return (
         <AnimatePresence>
             {isOpen && (
@@ -237,13 +227,12 @@ export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean
                             apiKey={import.meta.env.VITE_TAMBO_API_KEY || "demo"} // Placeholder if missing
                             userKey={userKey || "guest-recruiter"}
                             components={components}
-                            mcpServers={mcpServers}
                         >
                             <ChatInterface onClose={onClose} />
                         </TamboProvider>
-                    </motion.div>
+                    </motion.div >
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence >
     );
 };
