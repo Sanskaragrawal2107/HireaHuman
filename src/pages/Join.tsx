@@ -12,6 +12,8 @@ export const JoinPage = () => {
     const [loading, setLoading] = useState(false);
     const [useMagicLink, setUseMagicLink] = useState(false);
     const [magicLinkSent, setMagicLinkSent] = useState(false);
+    const [error, setError] = useState('');
+    const [needsEmailVerification, setNeedsEmailVerification] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const isLogin = location.pathname === '/login';
@@ -28,6 +30,7 @@ export const JoinPage = () => {
 
     const handlePasswordAuth = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
         setLoading(true);
         
         try {
@@ -37,19 +40,33 @@ export const JoinPage = () => {
                     email,
                     password
                 });
-                if (error) throw error;
+                
+                if (error) {
+                    // Handle specific login errors
+                    if (error.message?.includes('Email not confirmed')) {
+                        setError('Please verify your email first. Check your inbox for verification link.');
+                        setNeedsEmailVerification(true);
+                    } else if (error.message?.includes('Invalid login credentials')) {
+                        setError('Invalid email or password. Please try again.');
+                    } else {
+                        setError(error.message || 'Login failed. Please try again.');
+                    }
+                    throw error;
+                }
+                
                 if (data?.user) {
+                    // Successfully logged in
                     navigate('/profile');
                 }
             } else {
                 // Sign up with password
                 if (password !== confirmPassword) {
-                    alert('Passwords do not match!');
+                    setError('Passwords do not match!');
                     setLoading(false);
                     return;
                 }
                 if (password.length < 6) {
-                    alert('Password must be at least 6 characters long');
+                    setError('Password must be at least 6 characters long');
                     setLoading(false);
                     return;
                 }
@@ -58,14 +75,31 @@ export const JoinPage = () => {
                     email,
                     password
                 });
-                if (error) throw error;
-                if (data?.user) {
+                
+                if (error) {
+                    // Handle specific signup errors
+                    if (error.message?.includes('User already registered')) {
+                        setError('Account already exists. Please login instead.');
+                    } else if (error.message?.includes('already exists')) {
+                        setError('This email is already registered. Please login or use a different email.');
+                    } else {
+                        setError(error.message || 'Signup failed. Please try again.');
+                    }
+                    throw error;
+                }
+                
+                // Check if email verification is required
+                if (data?.requireEmailVerification) {
+                    setNeedsEmailVerification(true);
+                    setError('Account created! Please check your email to verify your account.');
+                } else if (data?.user) {
+                    // Successfully signed up and logged in
                     navigate('/profile');
                 }
             }
         } catch (error: any) {
             console.error(error);
-            alert(error.message || 'Authentication failed');
+            // Error already set in specific handlers above
         } finally {
             setLoading(false);
         }
@@ -73,6 +107,7 @@ export const JoinPage = () => {
 
     const handleMagicLink = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
         setLoading(true);
         // @ts-ignore
         const { error } = await insforge.auth.signIn({
@@ -83,7 +118,7 @@ export const JoinPage = () => {
         });
         if (error) {
             console.error(error);
-            alert(error.message);
+            setError(error.message || 'Failed to send magic link. Please try again.');
         } else {
             setMagicLinkSent(true);
         }
@@ -144,8 +179,39 @@ export const JoinPage = () => {
                         </div>
                     </div>
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className={`p-4 rounded border ${
+                            error.includes('created') || error.includes('verify your email') 
+                                ? 'bg-green-500/5 border-green-500/20 text-green-400' 
+                                : error.includes('already exists') || error.includes('already registered')
+                                ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-400'
+                                : 'bg-red-500/5 border-red-500/20 text-red-400'
+                        }`}>
+                            <p className="text-xs font-mono">{error}</p>
+                            {error.includes('already exists') && (
+                                <Link 
+                                    to="/login" 
+                                    className="text-cyan-400 hover:text-white underline text-xs font-mono mt-2 inline-block"
+                                >
+                                    → Go to Login
+                                </Link>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Email Verification Message */}
+                    {needsEmailVerification && (
+                        <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded text-center">
+                            <h3 className="text-blue-400 font-bold mb-2 font-mono uppercase tracking-wider text-sm">Verify Your Email</h3>
+                            <p className="text-zinc-400 text-xs font-mono mb-2">We've sent a verification link to:</p>
+                            <p className="text-white font-mono text-xs mb-3">{email}</p>
+                            <p className="text-zinc-500 text-[10px] font-mono">Click the link in the email to activate your account, then come back to login.</p>
+                        </div>
+                    )}
+
                     {/* Email/Password Form */}
-                    {!magicLinkSent ? (
+                    {!magicLinkSent && !needsEmailVerification ? (
                         <form onSubmit={useMagicLink ? handleMagicLink : handlePasswordAuth} className="space-y-4">
                             <div className="space-y-2">
                                 <label htmlFor="email" className="sr-only">Email</label>
@@ -223,18 +289,19 @@ export const JoinPage = () => {
                                 {useMagicLink ? 'Use password instead' : 'Use magic link instead'}
                             </button>
                         </form>
-                    ) : (
+                    ) : magicLinkSent ? (
                         <div className="p-6 bg-green-500/5 border border-green-500/20 rounded text-center">
-                            <h3 className="text-green-400 font-bold mb-2 font-mono uppercase tracking-wider">Link Dispatched</h3>
-                            <p className="text-zinc-400 text-xs font-mono mb-4">Check inbox for access token: <span className="text-white block mt-1">{email}</span></p>
+                            <h3 className="text-green-400 font-bold mb-2 font-mono uppercase tracking-wider">Magic Link Sent!</h3>
+                            <p className="text-zinc-400 text-xs font-mono mb-4">Check your inbox for the login link: <span className="text-white block mt-1">{email}</span></p>
+                            <p className="text-zinc-500 text-[10px] font-mono mb-4">Click the link in the email to sign in automatically.</p>
                             <button
-                                onClick={() => setMagicLinkSent(false)}
+                                onClick={() => { setMagicLinkSent(false); setError(''); }}
                                 className="text-[10px] text-zinc-500 hover:text-cyan-400 underline uppercase tracking-widest font-mono"
                             >
-                                Retry different address
+                                Use different email
                             </button>
                         </div>
-                    )}
+                    ) : null}
                 </div>
 
                 <div className="text-center text-xs text-zinc-600 font-mono">
