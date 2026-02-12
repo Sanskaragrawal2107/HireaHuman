@@ -128,8 +128,8 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
 
                         <div className={`flex flex-col gap-1 max-w-[85%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
                             <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${message.role === 'user'
-                                    ? 'bg-zinc-800 text-white rounded-tr-none'
-                                    : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
+                                ? 'bg-zinc-800 text-white rounded-tr-none'
+                                : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
                                 }`}>
                                 {message.content}
                             </div>
@@ -137,7 +137,7 @@ const ChatInterface = ({ onClose }: { onClose: () => void }) => {
                             {/* Rendered Components */}
                             {message.components && (
                                 <div className="w-full">
-                                    {message.components.map((comp, idx) => (
+                                    {message.components.map((comp: React.ReactNode, idx: number) => (
                                         <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                             {comp}
                                         </div>
@@ -204,10 +204,10 @@ export const RecruiterChatbot = ({ isOpen, onClose }: { isOpen: boolean; onClose
     const mcpServers = [
         {
             name: "hireahuman-mcp",
-            url: "http://localhost:8000/sse", // Default FastMCP SSE endpoint
-            transport: "sse" as const
+            url: "http://localhost:8000/sse",
+            transport: "sse"
         }
-    ];
+    ] as any;
 
     return (
         <AnimatePresence>

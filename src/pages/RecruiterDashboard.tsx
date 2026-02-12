@@ -326,11 +326,10 @@ export const RecruiterDashboard = () => {
                             </div>
                         </div>
                     </div>
-                    </div>
                 </div>
             </div>
 
             <RecruiterChatbot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-        </div >
+        </div>
     );
 };
