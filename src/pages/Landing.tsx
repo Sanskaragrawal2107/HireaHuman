@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Shield, Code, Cpu, Database } from 'lucide-react';
+import { Shield, Code, Cpu, Database, Github, Zap, Search, Lock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 
@@ -163,6 +163,143 @@ export const LandingPage = () => {
             {/* MARQUEE */}
             <section className="bg-black/80 backdrop-blur border-y border-zinc-800 py-6">
                 <ScrollMarquee items={TECH_STACK} speed={40} />
+            </section>
+
+            {/* GITHUB SCANNING FEATURE - THE VERIFIER */}
+            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-900/10 to-transparent pointer-events-none" />
+
+                <div className="flex flex-col md:flex-row items-center gap-16 relative z-10">
+                    <div className="w-full md:w-1/2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 text-xs font-mono tracking-widest mb-6 uppercase">
+                            <Github className="w-3 h-3" /> Source Code Verification
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-6 leading-tight">
+                            RESUMES LIE.<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                                COMMIT LOGS DON'T.
+                            </span>
+                        </h2>
+                        <p className="text-xl text-zinc-400 font-light mb-8 leading-relaxed">
+                            Every candidate claims they know "System Design." <br />
+                            <span className="text-white font-medium">We verify who actually wrote the code.</span>
+                        </p>
+
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className="mt-1">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-500">1</div>
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-bold text-lg">Deep Repo Analysis</h4>
+                                    <p className="text-zinc-500 text-sm mt-1">We don't just read the README. Our agents scan commit history, PR complexity, and code architecture.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="mt-1">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-500">2</div>
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-bold text-lg">Bluff Detection</h4>
+                                    <p className="text-zinc-500 text-sm mt-1">Claiming 5 years of Rust? We check if you've actually shipped it in production or just forked a "Hello World".</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="mt-1">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-green-500">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-bold text-lg">Verified "Human" Badge</h4>
+                                    <p className="text-zinc-500 text-sm mt-1">Only verified builders get visible to top companies. No more competing with ChatGPT-generated CVs.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-full md:w-1/2 relative">
+                        {/* Mock Terminal/Code Scan UI */}
+                        <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl relative">
+                            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
+                                <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                                <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                                <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
+                                <div className="ml-auto text-xs font-mono text-zinc-600">scanner_v2.py</div>
+                            </div>
+                            <div className="p-6 font-mono text-xs md:text-sm space-y-2">
+                                <div className="text-zinc-500">$ scan --user "dev_rockstar" --deep</div>
+                                <div className="text-yellow-500">→ INITIALIZING GIT CRAWLER...</div>
+                                <div className="text-zinc-400">→ Analyzing 42 repositories...</div>
+                                <div className="text-zinc-500">...</div>
+                                <div className="pl-4 border-l-2 border-red-500/30 text-zinc-400">
+                                    <span className="text-red-500 mr-2">[ALERT]</span>
+                                    'Advanced AI Architecture' repo is a fork (98% match)
+                                </div>
+                                <div className="pl-4 border-l-2 border-green-500/30 text-zinc-400">
+                                    <span className="text-green-500 mr-2">[PASS]</span>
+                                    Consistent contribution graph (3.2 yrs) - TypeScript/Rust
+                                </div>
+                                <div className="text-zinc-400">→ Calculating Reality Score...</div>
+                                <div className="mt-4 p-4 bg-zinc-900/50 border border-zinc-800 rounded flex items-center justify-between">
+                                    <span className="text-zinc-300">REALITY SCORE:</span>
+                                    <span className="text-green-400 font-bold block animate-pulse">94/100 (VERIFIED)</span>
+                                </div>
+                            </div>
+
+                            {/* Scanning overlay effect */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent h-[20%] w-full animate-scan pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* AUTOMATIC SEARCH EXPLAINER - ZERO QUERY */}
+            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">
+                        STOP SEARCHING.<br />
+                        <span className="text-cyan-500">START BEING FOUND.</span>
+                    </h2>
+                    <p className="text-xl text-zinc-400">
+                        Searching for jobs is obsolete. You don't browse Netflix for movies anymore; it knows what you like.
+                        We built the same engine for your career.
+                    </p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-8 text-center md:text-left">
+                    <div className="p-8 border border-zinc-800 bg-zinc-900/20 rounded-xl hover:bg-zinc-900/40 transition-colors">
+                        <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6 text-zinc-400 mx-auto md:mx-0">
+                            <Search className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-3">1. You Do Nothing.</h3>
+                        <p className="text-zinc-500 leading-relaxed">
+                            Once your profile is active, you don't need to "search" for anything. Close the tab. Go build something cool.
+                        </p>
+                    </div>
+
+                    <div className="p-8 border border-zinc-800 bg-zinc-900/20 rounded-xl hover:bg-zinc-900/40 transition-colors relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500/50" />
+                        <div className="w-12 h-12 bg-cyan-900/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 mx-auto md:mx-0">
+                            <Zap className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-3">2. We Match in Background.</h3>
+                        <p className="text-zinc-500 leading-relaxed">
+                            Our vectors match your verified GitHub skills against private job requirements 24/7. Even while you sleep.
+                        </p>
+                    </div>
+
+                    <div className="p-8 border border-zinc-800 bg-zinc-900/20 rounded-xl hover:bg-zinc-900/40 transition-colors">
+                        <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6 text-zinc-400 mx-auto md:mx-0">
+                            <Lock className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-3">3. Incoming Request.</h3>
+                        <p className="text-zinc-500 leading-relaxed">
+                            You get a ping only when a company actually wants to interview **you**.
+                            <span className="block mt-2 text-cyan-500 text-xs font-mono tracking-widest uppercase">90% Response Rate</span>
+                        </p>
+                    </div>
+                </div>
             </section>
 
             {/* FEATURES GRID */}
