@@ -226,8 +226,7 @@ export const VerifyCompanyPage = () => {
         setLoading(true);
         setError('');
 
-        const plan = isChatbotIncluded ? 'verified_plus_chatbot' : 'verified';
-        const amount = 199 + (isChatbotIncluded ? 249 : 0);
+        const chatbotAmount = isChatbotIncluded ? 249 : 0;
 
         try {
             // 1. Get company ID for this user
@@ -239,37 +238,40 @@ export const VerifyCompanyPage = () => {
 
             if (companyError || !company) throw new Error('Company not found. Please go back and re-submit.');
 
-            // 2. Create subscription record
             const now = new Date();
-            const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
 
-            const { error: subError } = await insforge.database
-                .from('subscriptions')
-                .insert({
-                    company_id: company.id,
-                    plan,
-                    amount_inr: amount,
-                    status: 'active',
-                    started_at: now.toISOString(),
-                    current_period_start: now.toISOString(),
-                    current_period_end: periodEnd.toISOString(),
-                    payment_method: 'stripe',
-                });
+            // 2. If chatbot selected, create subscription record
+            if (isChatbotIncluded) {
+                const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
 
-            if (subError) throw subError;
+                const { error: subError } = await insforge.database
+                    .from('subscriptions')
+                    .insert({
+                        company_id: company.id,
+                        plan: 'chatbot',
+                        amount_inr: chatbotAmount,
+                        status: 'active',
+                        started_at: now.toISOString(),
+                        current_period_start: now.toISOString(),
+                        current_period_end: periodEnd.toISOString(),
+                        payment_method: 'stripe',
+                    });
 
-            // 3. Update company with subscription details
-            const { error: updateError } = await insforge.database
-                .from('companies')
-                .update({
-                    subscription_plan: plan,
-                    subscription_status: 'active',
-                    subscription_expires_at: periodEnd.toISOString(),
-                    chatbot_enabled: isChatbotIncluded,
-                })
-                .eq('id', company.id);
+                if (subError) throw subError;
 
-            if (updateError) throw updateError;
+                // Update company with chatbot subscription
+                const { error: updateError } = await insforge.database
+                    .from('companies')
+                    .update({
+                        subscription_plan: 'chatbot',
+                        subscription_status: 'active',
+                        subscription_expires_at: periodEnd.toISOString(),
+                        chatbot_enabled: true,
+                    })
+                    .eq('id', company.id);
+
+                if (updateError) throw updateError;
+            }
 
             setStep('success');
         } catch (err: any) {
@@ -695,8 +697,8 @@ export const VerifyCompanyPage = () => {
                         {step === 'payment' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-xl font-semibold text-slate-900 mb-1">Select your plan</h2>
-                                    <p className="text-slate-500 text-sm">Choose how you want to hire.</p>
+                                    <h2 className="text-xl font-semibold text-slate-900 mb-1">Complete Verification</h2>
+                                    <p className="text-slate-500 text-sm">Security deposit & optional AI chatbot subscription.</p>
                                 </div>
 
                                 {/* Verification Fee */}
@@ -704,24 +706,35 @@ export const VerifyCompanyPage = () => {
                                     <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">REQUIRED</div>
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
-                                            <h3 className="font-semibold text-slate-900">Company Verification</h3>
-                                            <p className="text-xs text-slate-500">Monthly subscription for trust badge & access.</p>
+                                            <h3 className="font-semibold text-slate-900">Security Deposit</h3>
+                                            <p className="text-xs text-slate-500">One-time refundable deposit for verification.</p>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-xl font-bold text-slate-900">₹199<span className="text-xs font-normal text-slate-500">/mo</span></div>
-                                            <span className="text-xs text-slate-400 block line-through">₹800</span>
+                                            <span className="text-xl font-bold text-slate-900">₹1,000</span>
+                                            <span className="text-xs text-green-600 block font-medium">₹900 refunded</span>
                                         </div>
                                     </div>
                                     <ul className="space-y-1.5 mt-3">
                                         <li className="flex items-center gap-2 text-xs text-slate-600">
                                             <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                                            <span>Verified Badge on profile</span>
+                                            <span>Domain & DNS verification</span>
                                         </li>
                                         <li className="flex items-center gap-2 text-xs text-slate-600">
                                             <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                                            <span>Access to candidate database</span>
+                                            <span>LinkedIn company validation</span>
+                                        </li>
+                                        <li className="flex items-center gap-2 text-xs text-slate-600">
+                                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                                            <span>Verified employer badge</span>
+                                        </li>
+                                        <li className="flex items-center gap-2 text-xs text-slate-600">
+                                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                                            <span>Access to talent pool</span>
                                         </li>
                                     </ul>
+                                    <div className="mt-3 p-2 bg-blue-50 rounded-lg text-xs text-blue-700">
+                                        <span className="font-semibold">Net cost: ₹100</span> — ₹900 refunded after manual review (24–48 hrs).
+                                    </div>
                                 </div>
 
                                 {/* Chatbot Add-on */}
@@ -764,8 +777,8 @@ export const VerifyCompanyPage = () => {
                                 <div className="flex justify-between items-center py-2 border-t border-slate-100">
                                     <span className="text-sm font-medium text-slate-600">Total due now</span>
                                     <div className="text-right">
-                                        <div className="text-2xl font-bold text-slate-900">₹{199 + (isChatbotIncluded ? 249 : 0)}</div>
-                                        <div className="text-xs text-slate-400">Includes taxes</div>
+                                        <div className="text-2xl font-bold text-slate-900">₹{(1000 + (isChatbotIncluded ? 249 : 0)).toLocaleString()}</div>
+                                        <div className="text-xs text-slate-400">{isChatbotIncluded ? '₹1,000 deposit + ₹249 first month' : 'Refundable deposit only'}</div>
                                     </div>
                                 </div>
 
@@ -775,7 +788,7 @@ export const VerifyCompanyPage = () => {
                                     className="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                                    {loading ? 'Processing payment...' : `Pay ₹${199 + (isChatbotIncluded ? 249 : 0)} & Verify`}
+                                    {loading ? 'Processing payment...' : `Pay ₹${(1000 + (isChatbotIncluded ? 249 : 0)).toLocaleString()} & Submit`}
                                 </button>
 
                                 <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
