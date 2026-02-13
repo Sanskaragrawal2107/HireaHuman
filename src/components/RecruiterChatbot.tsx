@@ -4,6 +4,7 @@ import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus } fr
 import { z } from "zod";
 import { X, Send, User, Bot, Loader2, CheckCircle, MapPin, Briefcase, Maximize2, Minimize2, Wrench, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -26,7 +27,7 @@ type CandidateListProps = z.infer<typeof CandidateSchema>;
 
 const CandidateList = ({ candidates }: CandidateListProps) => {
     const { streamStatus } = useTamboStreamStatus();
-    
+
     // Show loading state during streaming
     if (streamStatus.isStreaming || streamStatus.isPending) {
         return (
@@ -128,7 +129,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button 
+                    <button
                         onClick={toggleFullscreen}
                         className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
                         title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
@@ -165,15 +166,17 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                                 // Render text content
                                 if (block.type === 'text') {
                                     return (
-                                        <div key={idx} className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${message.role === 'user'
+                                        <div key={idx} className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${message.role === 'user'
                                             ? 'bg-zinc-800 text-white rounded-tr-none'
                                             : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
                                             }`}>
-                                            {block.text}
+                                            <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-strong:text-white prose-headings:text-white prose-a:text-cyan-400 prose-code:text-cyan-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded">
+                                                <ReactMarkdown>{block.text}</ReactMarkdown>
+                                            </div>
                                         </div>
                                     );
                                 }
-                                
+
                                 // Render tool use (agent actions)
                                 if (block.type === 'tool_use') {
                                     return (
@@ -192,7 +195,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                                         </div>
                                     );
                                 }
-                                
+
                                 // Render tool results
                                 if (block.type === 'tool_result') {
                                     return (
@@ -204,7 +207,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                                         </div>
                                     );
                                 }
-                                
+
                                 // Render components
                                 if (block.type === 'component' && block.renderedComponent) {
                                     return (
@@ -213,7 +216,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                                         </div>
                                     );
                                 }
-                                
+
                                 return null;
                             })}
                         </div>
@@ -264,7 +267,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
 
 export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean; onClose: () => void; userKey?: string }) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
-    
+
     // Register components
     const components = [{
         name: 'CandidateList',
@@ -294,19 +297,18 @@ export const RecruiterChatbot = ({ isOpen, onClose, userKey }: { isOpen: boolean
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className={`fixed top-0 bottom-0 bg-black shadow-2xl z-[101] ${
-                            isFullscreen 
-                                ? 'left-0 right-0 border-none' 
+                        className={`fixed top-0 bottom-0 bg-black shadow-2xl z-[101] ${isFullscreen
+                                ? 'left-0 right-0 border-none'
                                 : 'right-0 w-full max-w-md border-l border-zinc-800'
-                        }`}
+                            }`}
                     >
                         <TamboProvider
                             apiKey={import.meta.env.VITE_TAMBO_API_KEY || "demo"} // Placeholder if missing
                             userKey={userKey || "guest-recruiter"}
                             components={components}
                         >
-                            <ChatInterface 
-                                onClose={onClose} 
+                            <ChatInterface
+                                onClose={onClose}
                                 isFullscreen={isFullscreen}
                                 toggleFullscreen={toggleFullscreen}
                             />

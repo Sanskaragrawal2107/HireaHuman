@@ -30,8 +30,7 @@ export const VerifyCompanyPage = () => {
         businessId: ''
     });
 
-    // Add-on state
-    const [isChatbotIncluded, setIsChatbotIncluded] = useState(true);
+
 
     // ── Initial Auth Check ──
     useEffect(() => {
@@ -221,12 +220,10 @@ export const VerifyCompanyPage = () => {
         }
     };
 
-    // ── Payment Handler (persists subscription to DB) ──
+    // ── Payment Handler (records deposit) ──
     const handlePayment = async () => {
         setLoading(true);
         setError('');
-
-        const chatbotAmount = isChatbotIncluded ? 249 : 0;
 
         try {
             // 1. Get company ID for this user
@@ -237,41 +234,6 @@ export const VerifyCompanyPage = () => {
                 .single();
 
             if (companyError || !company) throw new Error('Company not found. Please go back and re-submit.');
-
-            const now = new Date();
-
-            // 2. If chatbot selected, create subscription record
-            if (isChatbotIncluded) {
-                const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
-
-                const { error: subError } = await insforge.database
-                    .from('subscriptions')
-                    .insert({
-                        company_id: company.id,
-                        plan: 'chatbot',
-                        amount_inr: chatbotAmount,
-                        status: 'active',
-                        started_at: now.toISOString(),
-                        current_period_start: now.toISOString(),
-                        current_period_end: periodEnd.toISOString(),
-                        payment_method: 'stripe',
-                    });
-
-                if (subError) throw subError;
-
-                // Update company with chatbot subscription
-                const { error: updateError } = await insforge.database
-                    .from('companies')
-                    .update({
-                        subscription_plan: 'chatbot',
-                        subscription_status: 'active',
-                        subscription_expires_at: periodEnd.toISOString(),
-                        chatbot_enabled: true,
-                    })
-                    .eq('id', company.id);
-
-                if (updateError) throw updateError;
-            }
 
             setStep('success');
         } catch (err: any) {
@@ -737,48 +699,12 @@ export const VerifyCompanyPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Chatbot Add-on */}
-                                <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 shadow-sm relative">
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-indigo-900">AI Recruiter Agent</h3>
-                                                <span className="bg-indigo-200 text-indigo-800 text-[10px] font-bold px-1.5 py-0.5 rounded">RECOMMENDED</span>
-                                            </div>
-                                            <p className="text-xs text-indigo-700 mb-3">
-                                                Automated screening, code analysis, and candidate matching.
-                                            </p>
-                                            <ul className="space-y-1.5">
-                                                <li className="flex items-center gap-2 text-xs text-indigo-800">
-                                                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
-                                                    <span>Deep GitHub analysis</span>
-                                                </li>
-                                                <li className="flex items-center gap-2 text-xs text-indigo-800">
-                                                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
-                                                    <span>Auto-outreach & scheduling</span>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-xl font-bold text-indigo-900">₹249<span className="text-xs font-normal text-indigo-500">/mo</span></div>
-                                            <label className="flex items-center justify-end gap-2 mt-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChatbotIncluded}
-                                                    onChange={(e) => setIsChatbotIncluded(e.target.checked)}
-                                                    className="w-4 h-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500"
-                                                />
-                                                <span className="text-xs font-medium text-indigo-700">Add</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <div className="flex justify-between items-center py-2 border-t border-slate-100">
                                     <span className="text-sm font-medium text-slate-600">Total due now</span>
                                     <div className="text-right">
-                                        <div className="text-2xl font-bold text-slate-900">₹{(1000 + (isChatbotIncluded ? 249 : 0)).toLocaleString()}</div>
-                                        <div className="text-xs text-slate-400">{isChatbotIncluded ? '₹1,000 deposit + ₹249 first month' : 'Refundable deposit only'}</div>
+                                        <div className="text-2xl font-bold text-slate-900">₹1,000</div>
+                                        <div className="text-xs text-slate-400">Refundable deposit (₹900 returned)</div>
                                     </div>
                                 </div>
 
@@ -788,7 +714,7 @@ export const VerifyCompanyPage = () => {
                                     className="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                                    {loading ? 'Processing payment...' : `Pay ₹${(1000 + (isChatbotIncluded ? 249 : 0)).toLocaleString()} & Submit`}
+                                    {loading ? 'Processing payment...' : 'Pay ₹1,000 & Submit'}
                                 </button>
 
                                 <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
