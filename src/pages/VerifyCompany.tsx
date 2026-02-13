@@ -30,6 +30,9 @@ export const VerifyCompanyPage = () => {
         businessId: ''
     });
 
+    // Add-on state
+    const [isChatbotIncluded, setIsChatbotIncluded] = useState(true);
+
     // ── Initial Auth Check ──
     useEffect(() => {
         const checkAuth = async () => {
@@ -642,48 +645,96 @@ export const VerifyCompanyPage = () => {
                         {step === 'payment' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-xl font-semibold text-slate-900 mb-1">Security deposit</h2>
-                                    <p className="text-slate-500 text-sm">A refundable deposit to prevent spam and demonstrate legitimacy.</p>
+                                    <h2 className="text-xl font-semibold text-slate-900 mb-1">Select your plan</h2>
+                                    <p className="text-slate-500 text-sm">Choose how you want to hire.</p>
                                 </div>
 
-                                <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-slate-600 text-sm">Verification deposit</span>
-                                        <span className="text-2xl font-bold text-slate-900">₹1,000</span>
+                                {/* Verification Fee */}
+                                <div className="p-4 bg-white rounded-xl border border-blue-200 shadow-sm relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">REQUIRED</div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">Company Verification</h3>
+                                            <p className="text-xs text-slate-500">One-time fee for trust badge & manual review.</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-xl font-bold text-slate-900">₹199</span>
+                                            <span className="text-xs text-slate-400 block line-through">₹800</span>
+                                        </div>
                                     </div>
-                                    <div className="border-t border-slate-200 pt-3 space-y-2 text-sm text-slate-500">
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-green-500" />
-                                            <span>₹900 refundable upon approval</span>
+                                    <ul className="space-y-1.5 mt-3">
+                                        <li className="flex items-center gap-2 text-xs text-slate-600">
+                                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                                            <span>Verified Badge on profile</span>
+                                        </li>
+                                        <li className="flex items-center gap-2 text-xs text-slate-600">
+                                            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                                            <span>Access to candidate database</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                {/* Chatbot Add-on */}
+                                <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 shadow-sm relative">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-semibold text-indigo-900">AI Recruiter Agent</h3>
+                                                <span className="bg-indigo-200 text-indigo-800 text-[10px] font-bold px-1.5 py-0.5 rounded">RECOMMENDED</span>
+                                            </div>
+                                            <p className="text-xs text-indigo-700 mb-3">
+                                                Automated screening, code analysis, and candidate matching.
+                                            </p>
+                                            <ul className="space-y-1.5">
+                                                <li className="flex items-center gap-2 text-xs text-indigo-800">
+                                                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
+                                                    <span>Deep GitHub analysis</span>
+                                                </li>
+                                                <li className="flex items-center gap-2 text-xs text-indigo-800">
+                                                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
+                                                    <span>Auto-outreach & scheduling</span>
+                                                </li>
+                                            </ul>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-slate-400" />
-                                            <span>₹100 one-time processing fee</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-slate-400" />
-                                            <span>Full refund if rejected</span>
+                                        <div className="text-right">
+                                            <div className="text-xl font-bold text-indigo-900">₹249<span className="text-xs font-normal text-indigo-500">/mo</span></div>
+                                            <label className="flex items-center justify-end gap-2 mt-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChatbotIncluded}
+                                                    onChange={(e) => setIsChatbotIncluded(e.target.checked)}
+                                                    className="w-4 h-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-xs font-medium text-indigo-700">Add</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl flex items-center gap-2">
-                                    <Lock className="w-4 h-4 shrink-0" />
-                                    Payment is securely processed via Stripe (simulated for demo).
+                                <div className="flex justify-between items-center py-2 border-t border-slate-100">
+                                    <span className="text-sm font-medium text-slate-600">Total due now</span>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-slate-900">₹{199 + (isChatbotIncluded ? 249 : 0)}</div>
+                                        <div className="text-xs text-slate-400">Includes taxes</div>
+                                    </div>
                                 </div>
 
                                 <button
                                     onClick={handlePayment}
                                     disabled={loading}
-                                    className="w-full py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                                    className="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                                    {loading ? 'Processing payment...' : 'Pay ₹1,000 & submit'}
+                                    {loading ? 'Processing payment...' : `Pay ₹${199 + (isChatbotIncluded ? 249 : 0)} & Verify`}
                                 </button>
+
+                                <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+                                    <Lock className="w-3 h-3" /> Secure payment via Stripe
+                                </div>
 
                                 <button
                                     onClick={() => setStep('company-form')}
-                                    className="w-full text-center text-sm text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-center gap-1"
+                                    className="w-full text-center text-sm text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-center gap-1 mt-4"
                                 >
                                     <ArrowLeft className="w-3 h-3" /> Back to details
                                 </button>
