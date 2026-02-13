@@ -11,6 +11,8 @@ import { VerifyCompanyPage } from './pages/VerifyCompany';
 import { RecruiterDashboard } from './pages/RecruiterDashboard';
 import { AdminPage } from './pages/Admin';
 import { NotFoundPage } from './pages/NotFound';
+import { BlogPage } from './pages/Blog';
+import { BlogPostPage } from './pages/BlogPost';
 
 const router = createBrowserRouter([
   {
@@ -90,6 +92,22 @@ const router = createBrowserRouter([
     element: (
       <Layout>
         <AdminPage />
+      </Layout>
+    )
+  },
+  {
+    path: "/blog",
+    element: (
+      <Layout>
+        <BlogPage />
+      </Layout>
+    )
+  },
+  {
+    path: "/blog/:slug",
+    element: (
+      <Layout>
+        <BlogPostPage />
       </Layout>
     )
   },

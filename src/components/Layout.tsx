@@ -17,6 +17,7 @@ const Navbar = () => {
         { label: 'HOME', path: '/' },
         { label: 'FIND_TALENT', path: '/browse' },
         { label: 'FOR_ENGINEERS', path: '/join' },
+        { label: 'INSIGHTS', path: '/blog' },
         { label: 'PROTOCOL', path: '/docs' },
     ];
 
