@@ -655,10 +655,10 @@ export const VerifyCompanyPage = () => {
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
                                             <h3 className="font-semibold text-slate-900">Company Verification</h3>
-                                            <p className="text-xs text-slate-500">One-time fee for trust badge & manual review.</p>
+                                            <p className="text-xs text-slate-500">Monthly subscription for trust badge & access.</p>
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-xl font-bold text-slate-900">₹199</span>
+                                            <div className="text-xl font-bold text-slate-900">₹199<span className="text-xs font-normal text-slate-500">/mo</span></div>
                                             <span className="text-xs text-slate-400 block line-through">₹800</span>
                                         </div>
                                     </div>
