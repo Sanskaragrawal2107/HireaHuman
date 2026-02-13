@@ -15,8 +15,8 @@
 | `/` | LandingPage | Hero, features, manifesto, stats (real from InsForge) |
 | `/browse` | BrowsePage | Talent directory with search/filter by skills, location, experience, employment status, BlueTech |
 | `/join` | JoinPage | Google OAuth or email magic link login → redirects to /profile |
-| `/profile` | ProfilePage | Engineer profile form: handle, name, bio, location, role, skills (max 15, 3-source selection), years of exp, GitHub, LinkedIn, resume upload (2/month limit), experience history, employment status |
-| `/dashboard` | DashboardPage | Candidate dashboard: profile completeness %, avatar upload, employment status toggle, resume status, BlueTech badge, experience timeline |
+| `/profile` | ProfilePage | Engineer profile form: handle, name, bio, location, role, skills (max 15, 3-source selection), years of exp, GitHub, LinkedIn, resume upload (2/month limit), experience history, **projects** (title, description, tech stack, URL), employment status, **job target** (internship / full-time) |
+| `/dashboard` | DashboardPage | Candidate dashboard: profile completeness %, avatar upload, employment status toggle, resume status, BlueTech badge, experience timeline, **projects display**, **job target badge**, **monthly profile views count** |
 | `/verify` | VerifyCompanyPage | Company verification: login/signup with email+password (real InsForge auth with email verification), company form with work email domain validation (blocks 40+ public domains), domain-website matching, business ID, security deposit. Clean corporate design. |
 | `/recruiter-dashboard` | RecruiterDashboard | Company dashboard: professional corporate design, verification status banners, company profile editor with save, talent pool stats, quick links sidebar |
 | `/admin` | AdminPage | Admin panel: professional table view, search/filter by status, approve/reject actions, company stats overview |
@@ -71,6 +71,9 @@ const { data } = await insforge.storage.from('avatars').uploadAuto(file);
 - [x] Company pages use **professional corporate design** (white/blue, not terminal/cyber)
 - [x] Real-time stats on landing page
 - [x] Avatar upload with photo preview
+- [x] **Projects section** — candidates can add projects with title, description, tech stack, and URL
+- [x] **Job target toggle** — candidates specify if they're looking for internship or full-time positions
+- [x] **Monthly profile views** — dashboard shows how many times the candidate's profile was viewed by recruiters/agents this month (from `profile_views` table)
 
 ## Pending
 - [ ] Stripe/Razorpay integration for BlueTech subscriptions and verification deposits

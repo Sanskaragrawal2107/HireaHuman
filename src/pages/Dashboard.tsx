@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Shield, Loader, Upload, User, Code, MapPin, Briefcase, FileText, Github, Linkedin, Star, Zap, Eye, Printer, Globe } from 'lucide-react';
+import { Shield, Loader, Upload, User, Code, MapPin, Briefcase, FileText, Github, Linkedin, Star, Zap, Eye, Printer, Globe, FolderGit2, Target, ExternalLink, TrendingUp, BarChart3 } from 'lucide-react';
 import { insforge } from '../lib/insforge';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ export const DashboardPage = () => {
     const [updating, setUpdating] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [showResume, setShowResume] = useState(false);
+    const [monthlyViews, setMonthlyViews] = useState(0);
 
     useEffect(() => {
         loadDashboard();
@@ -40,6 +41,23 @@ export const DashboardPage = () => {
                 return;
             }
             setProfile(profileData);
+
+            // Fetch monthly profile views
+            try {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                // @ts-ignore
+                const { data: viewsData, error: viewsError } = await insforge.database
+                    .from('profile_views')
+                    .select('id')
+                    .eq('profile_id', user.id)
+                    .gte('viewed_at', monthStart);
+                if (!viewsError && viewsData) {
+                    setMonthlyViews(viewsData.length);
+                }
+            } catch (viewErr) {
+                console.error('Failed to load profile views:', viewErr);
+            }
         } catch (err) {
             console.error("Dashboard load error:", err);
         } finally {
@@ -222,6 +240,14 @@ export const DashboardPage = () => {
                                         {profile?.preferred_location && <span className="flex items-center gap-1 text-indigo-400"><span className="text-zinc-700">•</span><Globe className="w-3 h-3" /> Preferred: {profile.preferred_location}</span>}
                                     </p>
                                     <p className="text-zinc-500 text-sm mt-2 line-clamp-2">{profile?.bio}</p>
+                                    {profile?.job_target && (
+                                        <div className="mt-2 flex items-center gap-1.5">
+                                            <Target className="w-3 h-3 text-teal-500" />
+                                            <span className="text-xs font-mono text-teal-400 uppercase tracking-wider">
+                                                {profile.job_target === 'internship' ? '🎓 Seeking Internship' : '💼 Seeking Full-Time'}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <Link to="/profile?edit=true" className="text-xs text-cyan-500 hover:text-white font-mono uppercase border border-cyan-500/30 px-3 py-1.5 rounded hover:bg-cyan-500/10 transition-all">
                                     Edit
@@ -264,6 +290,39 @@ export const DashboardPage = () => {
                                 <p className="text-zinc-600 text-sm font-mono">No experience added. <Link to="/profile?edit=true" className="text-cyan-500 hover:underline">Add experience →</Link></p>
                             )}
                         </section>
+
+                        {/* Projects */}
+                        <section className="p-6 border border-zinc-800 bg-zinc-900/20 rounded-xl">
+                            <h3 className="text-zinc-500 text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><FolderGit2 className="w-4 h-4" /> Projects</h3>
+                            {(profile?.projects || []).length > 0 ? (
+                                <div className="space-y-4">
+                                    {profile.projects.map((proj: any, i: number) => (
+                                        <div key={i} className="p-4 bg-black/30 border border-zinc-800/50 rounded space-y-2">
+                                            <div className="flex items-start justify-between">
+                                                <div className="font-bold text-white text-sm">{proj.title}</div>
+                                                {proj.url && (
+                                                    <a href={proj.url} target="_blank" rel="noreferrer" className="text-cyan-500 hover:text-cyan-400 transition-colors">
+                                                        <ExternalLink className="w-3.5 h-3.5" />
+                                                    </a>
+                                                )}
+                                            </div>
+                                            {proj.description && <p className="text-zinc-400 text-xs">{proj.description}</p>}
+                                            {proj.tech_stack && (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {proj.tech_stack.split(',').map((tech: string, j: number) => (
+                                                        <span key={j} className="px-1.5 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-300 text-[10px] font-mono rounded">
+                                                            {tech.trim()}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-zinc-600 text-sm font-mono">No projects added. <Link to="/profile?edit=true" className="text-cyan-500 hover:underline">Add projects →</Link></p>
+                            )}
+                        </section>
                     </div>
 
                     {/* Right Column */}
@@ -281,6 +340,21 @@ export const DashboardPage = () => {
                             {completeness < 100 && (
                                 <p className="text-zinc-600 text-xs mt-2 font-mono">Complete your profile for better AI matching</p>
                             )}
+                        </section>
+
+                        {/* Monthly Profile Views */}
+                        <section className="p-6 border border-zinc-800 bg-zinc-900/20 rounded-xl">
+                            <h3 className="text-zinc-500 text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Profile Views</h3>
+                            <div className="p-4 rounded border bg-cyan-500/5 border-cyan-500/20">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-zinc-400 text-xs font-mono">This Month</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <TrendingUp className="w-3.5 h-3.5 text-cyan-500" />
+                                        <span className="text-2xl font-bold font-mono text-cyan-400">{monthlyViews}</span>
+                                    </div>
+                                </div>
+                                <p className="text-zinc-600 text-[10px] font-mono mt-2">Times your profile was shown to recruiters via AI chatbot or agent this month.</p>
+                            </div>
                         </section>
 
                         {/* Employment Status */}

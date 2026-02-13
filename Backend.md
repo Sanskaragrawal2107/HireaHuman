@@ -29,6 +29,8 @@
 | last_profile_edit | timestamptz | — | |
 | preferred_location | text | — | Remote/City preference |
 | experience_history | jsonb | '[]' | Array of {company, role, from, to} |
+| projects | jsonb | '[]' | Array of {title, description, tech_stack, url} |
+| job_target | text | 'full_time' | 'internship' or 'full_time' |
 | price_per_15min | numeric | 5.00 | Legacy field |
 | is_online | boolean | false | Legacy field |
 | created_at | timestamptz | now() | |
@@ -53,6 +55,19 @@
 
 **RLS**: Enabled. Public read (all companies visible for admin panel).
 
+### `profile_views`
+| Column | Type | Default | Notes |
+|--------|------|---------|-------|
+| id | uuid | gen_random_uuid() | PK |
+| profile_id | uuid | — | FK to profiles.id, NOT NULL |
+| viewer_company_id | uuid | — | FK to companies.id, nullable |
+| source | text | 'chatbot' | 'chatbot', 'mcp_agent', 'search' |
+| viewed_at | timestamptz | now() | |
+
+**RLS**: Enabled. Anyone can insert (agents/chatbots), users can view own views.
+**Indexes**: Composite index on `(profile_id, viewed_at)` for fast monthly queries.
+**Purpose**: Tracks every time a candidate's profile is shown to a recruiter via chatbot or MCP agent. Monthly view count displayed on candidate dashboard.
+
 ## Storage Buckets
 | Bucket | Public | Purpose |
 |--------|--------|---------|
@@ -75,13 +90,16 @@
 Located in `/mcp_server`, this production-grade Python server (FastMCP) exposes structured candidate data to AI agents.
 
 **Tools:**
-1. `search_candidates`: Multi-filter search (skills, location, experience, availability).
-2. `get_candidate_profile`: Full detailed structured profile.
+1. `search_candidates`: Multi-filter search (skills, location, experience, availability, **job_target**).
+2. `get_candidate_profile`: Full detailed structured profile. **Records a profile view** on each call.
 3. `search_by_skills`: Advanced skill matching with required/preferred scoring.
 4. `get_candidate_resume`: Auto-generated structured resume data (JSON).
 5. `list_available_candidates`: Browse talent pool.
 6. `check_candidate_availability`: Pre-outreach check.
 7. `get_platform_stats`: Ecosystem metrics.
+
+**Profile View Tracking:**
+Every time `get_candidate_profile` is called via the MCP server, a row is inserted into `profile_views` with `source='mcp_agent'`. This powers the monthly view count on the candidate dashboard.
 
 **Running:**
 ```bash

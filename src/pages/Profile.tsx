@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { insforge } from '../lib/insforge';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Terminal, Save, User, Briefcase, Code, MapPin, Github, Linkedin, AlertCircle, Loader, Plus, X, Search, Globe, Sparkles, ChevronDown } from 'lucide-react';
+import { Terminal, Save, User, Briefcase, Code, MapPin, Github, Linkedin, AlertCircle, Loader, Plus, X, Search, Globe, Sparkles, ChevronDown, FolderGit2, Target, ExternalLink } from 'lucide-react';
 
 // ──────────────────────────────────────────────
 // COMPREHENSIVE CURATED SKILLS DATABASE
@@ -235,7 +235,9 @@ export const ProfilePage = () => {
         preferred_location: '',
         avatar_url: '',
         employment_status: 'AVAILABLE',
-        experience_history: [] as { company: string; role: string; from: string; to: string }[]
+        experience_history: [] as { company: string; role: string; from: string; to: string }[],
+        projects: [] as { title: string; description: string; tech_stack: string; url: string }[],
+        job_target: 'full_time' as 'internship' | 'full_time'
     });
 
     // ── Search Stack Exchange API on debounced input ──
@@ -299,7 +301,9 @@ export const ProfilePage = () => {
                     preferred_location: profile.preferred_location || '',
                     avatar_url: profile.avatar_url || '',
                     employment_status: profile.employment_status || 'AVAILABLE',
-                    experience_history: profile.experience_history || []
+                    experience_history: profile.experience_history || [],
+                    projects: profile.projects || [],
+                    job_target: profile.job_target || 'full_time'
                 });
 
                 // Profile edit counter (2 edits per 30 days)
@@ -366,7 +370,9 @@ export const ProfilePage = () => {
                 preferred_location: formData.preferred_location,
                 avatar_url: formData.avatar_url,
                 employment_status: formData.employment_status,
-                experience_history: formData.experience_history
+                experience_history: formData.experience_history,
+                projects: formData.projects,
+                job_target: formData.job_target
             };
 
             if (profileExists) {
@@ -449,6 +455,30 @@ export const ProfilePage = () => {
             ...prev,
             experience_history: prev.experience_history.map((exp, i) =>
                 i === index ? { ...exp, [field]: value } : exp
+            )
+        }));
+    };
+
+    // ── Project helpers ──
+    const addProject = () => {
+        setFormData(prev => ({
+            ...prev,
+            projects: [...prev.projects, { title: '', description: '', tech_stack: '', url: '' }]
+        }));
+    };
+
+    const removeProject = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateProject = (index: number, field: string, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.map((proj, i) =>
+                i === index ? { ...proj, [field]: value } : proj
             )
         }));
     };
@@ -872,7 +902,58 @@ export const ProfilePage = () => {
                     </section>
 
                     {/* ════════════════════════════════════════ */}
-                    {/* SECTION 5: EMPLOYMENT STATUS             */}
+                    {/* SECTION 5: PROJECTS                     */}
+                    {/* ════════════════════════════════════════ */}
+                    <section className="space-y-6">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2 border-l-2 border-orange-500 pl-4">
+                            <FolderGit2 className="w-5 h-5 text-zinc-500" /> Projects
+                        </h2>
+
+                        {formData.projects.map((proj, index) => (
+                            <div key={index} className="p-4 border border-zinc-800 bg-zinc-900/30 rounded space-y-3 relative">
+                                <button type="button" onClick={() => removeProject(index)} className="absolute top-2 right-2 text-zinc-600 hover:text-red-500 transition-colors">
+                                    <X className="w-4 h-4" />
+                                </button>
+                                <div className="grid md:grid-cols-2 gap-3">
+                                    <input
+                                        type="text" placeholder="Project Title"
+                                        value={proj.title}
+                                        onChange={e => updateProject(index, 'title', e.target.value)}
+                                        className="bg-black border border-zinc-700 text-white p-3 rounded focus:border-orange-500 focus:outline-none font-mono text-sm"
+                                    />
+                                    <input
+                                        type="text" placeholder="Tech Stack (e.g. React, Node.js, PostgreSQL)"
+                                        value={proj.tech_stack}
+                                        onChange={e => updateProject(index, 'tech_stack', e.target.value)}
+                                        className="bg-black border border-zinc-700 text-white p-3 rounded focus:border-orange-500 focus:outline-none font-mono text-sm"
+                                    />
+                                </div>
+                                <textarea
+                                    placeholder="Brief description of the project..."
+                                    value={proj.description}
+                                    onChange={e => updateProject(index, 'description', e.target.value)}
+                                    rows={2}
+                                    className="w-full bg-black border border-zinc-700 text-white p-3 rounded focus:border-orange-500 focus:outline-none font-mono text-sm resize-none"
+                                />
+                                <div className="flex items-center gap-2">
+                                    <ExternalLink className="w-3.5 h-3.5 text-zinc-600" />
+                                    <input
+                                        type="url" placeholder="Project URL (GitHub, live demo, etc.)"
+                                        value={proj.url}
+                                        onChange={e => updateProject(index, 'url', e.target.value)}
+                                        className="flex-1 bg-black border border-zinc-700 text-white p-3 rounded focus:border-orange-500 focus:outline-none font-mono text-sm"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+
+                        <button type="button" onClick={addProject} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-orange-500 font-mono transition-colors border border-dashed border-zinc-800 px-4 py-3 rounded hover:border-orange-500/50 w-full justify-center">
+                            <Plus className="w-4 h-4" /> Add Project
+                        </button>
+                    </section>
+
+                    {/* ════════════════════════════════════════ */}
+                    {/* SECTION 6: EMPLOYMENT STATUS             */}
                     {/* ════════════════════════════════════════ */}
                     <section className="space-y-6">
                         <h2 className="text-xl font-bold text-white flex items-center gap-2 border-l-2 border-blue-500 pl-4">
@@ -894,6 +975,35 @@ export const ProfilePage = () => {
                                 </button>
                             ))}
                         </div>
+                    </section>
+
+                    {/* ════════════════════════════════════════ */}
+                    {/* SECTION 7: JOB TARGET                   */}
+                    {/* ════════════════════════════════════════ */}
+                    <section className="space-y-6">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2 border-l-2 border-teal-500 pl-4">
+                            <Target className="w-5 h-5 text-zinc-500" /> Looking For
+                        </h2>
+                        <div className="flex gap-4">
+                            {[
+                                { value: 'internship', label: 'INTERNSHIP', emoji: '🎓' },
+                                { value: 'full_time', label: 'FULL-TIME', emoji: '💼' }
+                            ].map(option => (
+                                <button
+                                    key={option.value} type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, job_target: option.value as 'internship' | 'full_time' }))}
+                                    className={`px-6 py-3 rounded border text-sm font-bold font-mono uppercase tracking-widest transition-all flex-1 ${formData.job_target === option.value
+                                        ? 'bg-teal-500/20 border-teal-500 text-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.3)]'
+                                        : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-600'
+                                        }`}
+                                >
+                                    {option.emoji} {option.label}
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-[10px] text-zinc-600 font-mono">
+                            This helps recruiters and AI agents filter candidates by job type preference.
+                        </p>
                     </section>
 
                     {/* Error / Success Messages */}
