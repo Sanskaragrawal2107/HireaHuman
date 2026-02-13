@@ -146,9 +146,16 @@ export const RecruiterDashboard = () => {
                         </div>
                         <div>
                             <h3 className="font-semibold text-slate-900 mb-1">Verification declined</h3>
-                            <p className="text-sm text-slate-500 leading-relaxed">
-                                We were unable to verify your organization. Your security deposit will be fully refunded within 5–7 business days. Please contact support if you believe this was an error.
+                            <p className="text-sm text-slate-500 leading-relaxed mb-3">
+                                We were unable to verify your organization. Your security deposit will be fully refunded within 5–7 business days.
                             </p>
+                            {company.rejection_reason && (
+                                <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-700">
+                                    <span className="font-medium block mb-1">Reason provided:</span>
+                                    {company.rejection_reason}
+                                </div>
+                            )}
+                            <p className="text-xs text-slate-400 mt-2">Please contact support if you believe this was an error.</p>
                         </div>
                     </div>
                 )}

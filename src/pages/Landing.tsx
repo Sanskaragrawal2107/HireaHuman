@@ -185,6 +185,12 @@ export const LandingPage = () => {
                             <span className="text-white font-medium">We verify who actually wrote the code.</span>
                         </p>
 
+                        <div className="inline-block px-4 py-2 border border-red-500/20 bg-red-500/10 rounded mb-8">
+                            <span className="text-red-400 text-xs font-mono font-bold tracking-widest uppercase flex items-center gap-2">
+                                <Lock className="w-3 h-3" /> Exclusive to Verified Companies
+                            </span>
+                        </div>
+
                         <div className="space-y-6">
                             <div className="flex gap-4">
                                 <div className="mt-1">
