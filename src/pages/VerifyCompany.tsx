@@ -221,13 +221,63 @@ export const VerifyCompanyPage = () => {
         }
     };
 
-    // ── (Fake) Payment Handler ──
-    const handlePayment = () => {
+    // ── Payment Handler (persists subscription to DB) ──
+    const handlePayment = async () => {
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
+        setError('');
+
+        const plan = isChatbotIncluded ? 'verified_plus_chatbot' : 'verified';
+        const amount = 199 + (isChatbotIncluded ? 249 : 0);
+
+        try {
+            // 1. Get company ID for this user
+            const { data: company, error: companyError } = await insforge.database
+                .from('companies')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+
+            if (companyError || !company) throw new Error('Company not found. Please go back and re-submit.');
+
+            // 2. Create subscription record
+            const now = new Date();
+            const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 days
+
+            const { error: subError } = await insforge.database
+                .from('subscriptions')
+                .insert({
+                    company_id: company.id,
+                    plan,
+                    amount_inr: amount,
+                    status: 'active',
+                    started_at: now.toISOString(),
+                    current_period_start: now.toISOString(),
+                    current_period_end: periodEnd.toISOString(),
+                    payment_method: 'stripe',
+                });
+
+            if (subError) throw subError;
+
+            // 3. Update company with subscription details
+            const { error: updateError } = await insforge.database
+                .from('companies')
+                .update({
+                    subscription_plan: plan,
+                    subscription_status: 'active',
+                    subscription_expires_at: periodEnd.toISOString(),
+                    chatbot_enabled: isChatbotIncluded,
+                })
+                .eq('id', company.id);
+
+            if (updateError) throw updateError;
+
             setStep('success');
-        }, 2500);
+        } catch (err: any) {
+            console.error('Payment error:', err);
+            setError(err.message || 'Failed to process payment. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // ── Loading Screen ──

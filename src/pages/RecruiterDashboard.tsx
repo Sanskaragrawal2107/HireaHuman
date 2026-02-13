@@ -328,8 +328,25 @@ export const RecruiterDashboard = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">Plan</span>
-                                    <span className="text-slate-700">Free</span>
+                                    <span className={`font-medium ${company.subscription_status === 'active' ? 'text-blue-600' : 'text-slate-400'}`}>
+                                        {company.subscription_plan === 'verified_plus_chatbot' ? 'Verified + AI Agent' :
+                                            company.subscription_plan === 'verified' ? 'Verified' : 'No Plan'}
+                                    </span>
                                 </div>
+                                {company.subscription_status === 'active' && company.subscription_expires_at && (
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">Renews</span>
+                                        <span className="text-slate-700">
+                                            {new Date(company.subscription_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                )}
+                                {company.chatbot_enabled && (
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">AI Agent</span>
+                                        <span className="text-green-600 font-medium">Active</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
