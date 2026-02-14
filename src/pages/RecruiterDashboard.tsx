@@ -353,7 +353,12 @@ export const RecruiterDashboard = () => {
                 </div>
             </div>
 
-            <RecruiterChatbot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} userKey={company?.id || "guest-recruiter"} />
+            <RecruiterChatbot 
+                isOpen={isChatOpen} 
+                onClose={() => setIsChatOpen(false)} 
+                userKey={company?.id || "guest-recruiter"}
+                company={company ? { id: company.id, name: company.name, email: company.email } : undefined}
+            />
         </div>
     );
 };
