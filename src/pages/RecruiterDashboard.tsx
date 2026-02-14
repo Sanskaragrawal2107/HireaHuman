@@ -10,6 +10,8 @@ export const RecruiterDashboard = () => {
     const [company, setCompany] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [profileCount, setProfileCount] = useState(0);
+    const [shortlistedCount, setShortlistedCount] = useState(0);
+    const [interviewCount, setInterviewCount] = useState(0);
     const [description, setDescription] = useState('');
     const [savingDesc, setSavingDesc] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -35,6 +37,22 @@ export const RecruiterDashboard = () => {
                 // Get total profile count
                 const { count } = await insforge.database.from('profiles').select('*', { count: 'exact', head: true });
                 if (count) setProfileCount(count);
+
+                // Get shortlisted count (candidates with offered OR hired status)
+                const { count: shortlisted } = await insforge.database
+                    .from('hirings')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('company_id', data.id)
+                    .in('status', ['offered', 'hired']);
+                if (shortlisted) setShortlistedCount(shortlisted);
+
+                // Get interview count (candidates with interview scheduled)
+                const { count: interviews } = await insforge.database
+                    .from('hirings')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('company_id', data.id)
+                    .eq('interview_scheduled', true);
+                if (interviews) setInterviewCount(interviews);
             } catch {
                 navigate('/verify');
             } finally {
@@ -178,14 +196,14 @@ export const RecruiterDashboard = () => {
                                 <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-2">
                                     <BarChart3 className="w-3.5 h-3.5" /> Shortlisted
                                 </div>
-                                <div className="text-2xl font-bold text-slate-900">0</div>
+                                <div className="text-2xl font-bold text-slate-900">{shortlistedCount}</div>
                                 <div className="text-xs text-slate-400 mt-1">candidates saved</div>
                             </div>
                             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                                 <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-2">
                                     <Briefcase className="w-3.5 h-3.5" /> Interviews
                                 </div>
-                                <div className="text-2xl font-bold text-slate-900">0</div>
+                                <div className="text-2xl font-bold text-slate-900">{interviewCount}</div>
                                 <div className="text-xs text-slate-400 mt-1">scheduled</div>
                             </div>
                         </div>
