@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, createContext, useContext } from 'react';
-import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus } from "@tambo-ai/react";
+import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus, useTamboComponentState } from "@tambo-ai/react";
 import { z } from "zod";
 import { X, Send, User, Bot, MapPin, Briefcase, Maximize2, Minimize2, Wrench, CheckCircle2, Mail, Loader2, UserCheck, UserX, Star, ChevronDown, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +21,7 @@ const CompanyContext = createContext<CompanyInfo | null>(null);
 const CandidateSchema = z.object({
     candidates: z.array(z.object({
         handle: z.string(),
+        name: z.string().optional().describe("The candidate's display name or full name"),
         role: z.string().optional(),
         skills: z.array(z.string()).default([]),
         experience: z.number(),
@@ -28,7 +29,7 @@ const CandidateSchema = z.object({
         availability: z.string(),
         is_bluetech: z.boolean().optional(),
         match_score: z.number().optional(),
-        email: z.string().optional(),
+        email: z.string().optional().describe("The candidate's email address. MANDATORY to pass this through from search results."),
         hired_by_other: z.boolean().optional().describe("True if this candidate is already hired by another company"),
     })).optional().describe("Array of candidate profiles matching the search criteria"),
     show_available: z.boolean().optional().default(true).describe("Whether to show available candidates section"),
@@ -67,8 +68,33 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
     const [sent, setSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editMode, setEditMode] = useState(false);
-    const [editedSubject, setEditedSubject] = useState(subject);
-    const [editedBody, setEditedBody] = useState(body);
+
+    // Auto-fill defaults when AI sends empty values
+    const defaultSubject = subject?.trim()
+        ? subject
+        : `Hiring Opportunity from ${company?.name || 'Our Company'} — ${to_name || candidate_handle}`;
+
+    const defaultBody = body?.trim()
+        ? body
+        : `Hi ${to_name || candidate_handle},\n\nI came across your profile on HireaHuman and was impressed by your experience. We at ${company?.name || 'our company'} are actively looking to bring on talented individuals like yourself.\n\nI'd love to discuss how we can work together. Would you be available for a quick conversation this week?\n\nLooking forward to hearing from you.\n\nBest regards,\n${company?.name || 'Recruiter'}`;
+
+    // Use Tambo state for persistence and AI edits
+    const [editedTo, setEditedTo] = useTamboComponentState("editedTo", to || "");
+    const [editedSubject, setEditedSubject] = useTamboComponentState("editedSubject", defaultSubject);
+    const [editedBody, setEditedBody] = useTamboComponentState("editedBody", defaultBody);
+    
+    // Ensure defaults update if props change (e.g. streaming update)
+    useEffect(() => {
+        if (to && to !== editedTo && !editMode) setEditedTo(to);
+    }, [to, editMode]);
+
+    useEffect(() => {
+        if (subject && subject !== editedSubject && !editMode) setEditedSubject(subject);
+    }, [subject, editMode]);
+
+    useEffect(() => {
+        if (body && body !== editedBody && !editMode) setEditedBody(body);
+    }, [body, editMode]);
 
     const handleSendEmail = async () => {
         if (!company) {
@@ -85,7 +111,7 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    to: to,
+                    to: editedTo,
                     subject: editedSubject,
                     body: editedBody,
                     from_company: company.name,
@@ -97,13 +123,17 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
                 throw new Error('Failed to send email');
             }
 
+            console.log('Email sent. Looking up candidate with handle:', candidate_handle);
+
             // Record hiring offer in database
             // First get candidate profile ID
-            const { data: profile } = await insforge.database
+            const { data: profile, error: queryError } = await insforge.database
                 .from('profiles')
                 .select('id')
                 .eq('handle', candidate_handle)
                 .single();
+
+            console.log('Profile lookup for hiring record:', { profile, queryError });
 
             if (profile?.id) {
                 await insforge.database.from('hirings').insert([{
@@ -113,6 +143,9 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
                     email_sent: true,
                     notes: `Email sent: ${editedSubject}`,
                 }]);
+                console.log('Hiring record created');
+            } else {
+                console.warn('Could not create hiring record - profile not found');
             }
 
             setSent(true);
@@ -137,7 +170,7 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
                     </div>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
-                    The candidate will receive your email at <span className="text-white font-mono">{to}</span>
+                    The candidate will receive your email at <span className="text-white font-mono">{editedTo}</span>
                 </p>
             </div>
         );
@@ -158,12 +191,21 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
 
             {/* Email Content */}
             <div className="p-4 space-y-4">
-                {/* To Field */}
+                {/* To Field — editable so recruiter can correct */}
                 <div className="space-y-1">
                     <label className="text-[10px] text-zinc-500 uppercase tracking-wider">To</label>
-                    <div className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 font-mono">
-                        {to}
-                    </div>
+                    {editMode ? (
+                        <input
+                            type="email"
+                            value={editedTo}
+                            onChange={(e) => setEditedTo(e.target.value)}
+                            className="w-full bg-zinc-950 border border-cyan-500/50 rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                        />
+                    ) : (
+                        <div className="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-sm text-zinc-300 font-mono">
+                            {editedTo}
+                        </div>
+                    )}
                 </div>
 
                 {/* Subject Field */}
@@ -257,16 +299,26 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
         setError(null);
 
         try {
+            console.log('Looking up profile for handle:', candidate_handle);
+            
             // Get candidate profile
-            const { data: profile } = await insforge.database
+            const { data: profile, error: queryError } = await insforge.database
                 .from('profiles')
                 .select('id')
                 .eq('handle', candidate_handle)
                 .single();
 
-            if (!profile?.id) {
-                throw new Error('Candidate not found');
+            console.log('Profile lookup result:', { profile, queryError });
+
+            if (queryError) {
+                throw new Error(`Database error: ${queryError.message}`);
             }
+
+            if (!profile?.id) {
+                throw new Error(`Candidate with handle "@${candidate_handle}" not found in database`);
+            }
+
+            console.log('Found profile ID:', profile.id);
 
             // Update hiring status
             await insforge.database
@@ -287,6 +339,7 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
                 })
                 .eq('id', profile.id);
 
+            console.log('Candidate marked as hired');
             setMarked(true);
         } catch (err) {
             console.error('Mark hired error:', err);
@@ -395,7 +448,10 @@ const CandidateList = ({ candidates, show_available = true, show_hired = true, h
     type CandidateType = NonNullable<typeof candidates>[number];
     
     const handleWantToHire = (candidate: CandidateType) => {
-        setValue(`I want to hire @${candidate.handle}. Please draft an email for me.`);
+        const candidateName = candidate.name || candidate.handle;
+        const candidateEmail = candidate.email || 'unknown';
+        
+        setValue(`I want to hire @${candidate.handle}. Their email is ${candidateEmail}. Their name is ${candidateName}. Please draft a professional hiring email for me with a filled-in subject and body.`);
         setTimeout(() => submit(), 100);
     };
 
@@ -742,7 +798,13 @@ export const RecruiterChatbot = ({ isOpen, onClose, userKey, company }: Recruite
         },
         {
             name: 'EmailDraft',
-            description: `Renders an email draft UI when recruiter wants to hire a candidate. The recruiter can review, edit, and send the email. Company name "${company?.name || 'the company'}" should be included in signature. Once sent, the email is POSTed to the webhook and a hiring record is created.`,
+            description: `Renders an email draft UI when a recruiter wants to hire a candidate. You MUST fill in ALL fields:
+- "to": The candidate's actual email from the search results or profile data (NOT the recruiter's email).
+- "to_name": The candidate's display name.
+- "candidate_handle": The candidate's handle for tracking.
+- "subject": A professional subject line, e.g. "Exciting Opportunity at ${company?.name || 'Our Company'} — We'd Love to Work With You".
+- "body": A professional, warm hiring email body. Include: greeting with candidate name, why they caught your eye, what ${company?.name || 'the company'} does, invitation to chat, and a sign-off from ${company?.name || 'the company'}.
+NEVER leave subject or body empty. Always generate compelling, ready-to-send content.`,
             component: EmailDraftComponent,
             propsSchema: EmailDraftSchema
         },
