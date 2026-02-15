@@ -13,6 +13,7 @@ import { AdminPage } from './pages/Admin';
 import { NotFoundPage } from './pages/NotFound';
 import { BlogPage } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
+import { VsRentAHuman } from './pages/VsRentAHuman';
 
 const router = createBrowserRouter([
   {
@@ -108,6 +109,14 @@ const router = createBrowserRouter([
     element: (
       <Layout>
         <BlogPostPage />
+      </Layout>
+    )
+  },
+  {
+    path: "/vs/rentahuman",
+    element: (
+      <Layout>
+        <VsRentAHuman />
       </Layout>
     )
   },

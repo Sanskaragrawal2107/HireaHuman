@@ -103,7 +103,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                     <div className="space-y-4">
                         <div className="text-white font-bold mb-4 uppercase tracking-widest">Protocols</div>
                         <Link to="/verify" className="block py-1 hover:text-cyan-500 transition-colors">Level 3 Verification</Link>
-                        <a href="#" className="block py-1 hover:text-cyan-500 transition-colors">Talent Signal</a>
+                        <Link to="/vs/rentahuman" className="block py-1 hover:text-cyan-500 transition-colors">Vs Rent A Human</Link>
                         <a href="#" className="block py-1 hover:text-cyan-500 transition-colors">Hiring State Lock</a>
                     </div>
                     <div className="space-y-4">
