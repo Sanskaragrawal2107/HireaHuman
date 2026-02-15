@@ -197,7 +197,7 @@ export const LandingPage = () => {
                                     <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-500">1</div>
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-bold text-lg">Deep Repo Analysis</h4>
+                                    <h3 className="text-white font-bold text-lg">Deep Repo Analysis</h3>
                                     <p className="text-zinc-500 text-sm mt-1">We don't just read the README. Our agents scan commit history, PR complexity, and code architecture.</p>
                                 </div>
                             </div>
@@ -206,7 +206,7 @@ export const LandingPage = () => {
                                     <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-500">2</div>
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-bold text-lg">Bluff Detection</h4>
+                                    <h3 className="text-white font-bold text-lg">Bluff Detection</h3>
                                     <p className="text-zinc-500 text-sm mt-1">Claiming 5 years of Rust? We check if you've actually shipped it in production or just forked a "Hello World".</p>
                                 </div>
                             </div>
@@ -217,7 +217,7 @@ export const LandingPage = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-bold text-lg">Verified "Human" Badge</h4>
+                                    <h3 className="text-white font-bold text-lg">Verified "Human" Badge</h3>
                                     <p className="text-zinc-500 text-sm mt-1">Only verified builders get visible to top companies. No more competing with ChatGPT-generated CVs.</p>
                                 </div>
                             </div>
@@ -279,7 +279,7 @@ export const LandingPage = () => {
                             <Search className="w-6 h-6" />
                         </div>
                         <h3 className="text-xl font-bold text-white mb-3">1. You Do Nothing.</h3>
-                        <p className="text-zinc-500 leading-relaxed">
+                        <p className="text-zinc-500 leading-relaxed text-sm md:text-base">
                             Once your profile is active, you don't need to "search" for anything. Close the tab. Go build something cool.
                         </p>
                     </div>
@@ -290,7 +290,7 @@ export const LandingPage = () => {
                             <Zap className="w-6 h-6" />
                         </div>
                         <h3 className="text-xl font-bold text-white mb-3">2. We Match in Background.</h3>
-                        <p className="text-zinc-500 leading-relaxed">
+                        <p className="text-zinc-500 leading-relaxed text-sm md:text-base">
                             Our vectors match your verified GitHub skills against private job requirements 24/7. Even while you sleep.
                         </p>
                     </div>
@@ -300,7 +300,7 @@ export const LandingPage = () => {
                             <Lock className="w-6 h-6" />
                         </div>
                         <h3 className="text-xl font-bold text-white mb-3">3. Incoming Request.</h3>
-                        <p className="text-zinc-500 leading-relaxed">
+                        <p className="text-zinc-500 leading-relaxed text-sm md:text-base">
                             You get a ping only when a company actually wants to interview **you**.
                             <span className="block mt-2 text-cyan-500 text-xs font-mono tracking-widest uppercase">90% Response Rate</span>
                         </p>
@@ -393,14 +393,14 @@ export const LandingPage = () => {
                     <div className="grid md:grid-cols-2 gap-12 text-left items-center">
                         <div>
                             <h3 className="text-2xl font-bold text-white mb-4 font-mono">🧬 WHEN YOU'RE HIRED, YOU'RE HIRED.</h3>
-                            <p className="text-zinc-500 leading-relaxed mb-4">
+                            <p className="text-zinc-500 leading-relaxed mb-4 text-sm md:text-base">
                                 Accept a job → Your profile status updates. No double-booking. No silent multi-company stacking.
                             </p>
                             <div className="text-green-500 font-mono text-sm">[ CLEAN STATE. CLEAN HIRING. ]</div>
                         </div>
                         <div>
                             <h3 className="text-2xl font-bold text-white mb-4 font-mono">🚫 THIS IS NOT LINKEDIN.</h3>
-                            <p className="text-zinc-500 leading-relaxed mb-4">
+                            <p className="text-zinc-500 leading-relaxed mb-4 text-sm md:text-base">
                                 LinkedIn is where you post. HireAHuman is where you get hired.
                                 This is not a job board. You don't apply. You get scouted.
                             </p>
