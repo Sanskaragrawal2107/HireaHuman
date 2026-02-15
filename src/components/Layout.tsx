@@ -1,7 +1,6 @@
-
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Wifi, Terminal } from 'lucide-react';
+import { Activity, Wifi, Terminal, Twitter, Linkedin, Facebook, Instagram, Youtube, Github } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -22,9 +21,9 @@ const Navbar = () => {
     ];
 
     return (
-        <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800 h-16 flex items-center justify-between px-6 font-mono text-xs">
+        <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800 h-16 flex items-center justify-between px-6 font-mono text-xs md:text-sm">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-2 group py-2">
                 <div className="relative w-8 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-700 group-hover:border-cyan-500 transition-colors">
                     <Terminal className="w-4 h-4 text-cyan-500 fill-current animate-pulse" />
                 </div>
@@ -41,7 +40,7 @@ const Navbar = () => {
                         key={item.label}
                         to={item.path}
                         className={cn(
-                            "relative py-1 tracking-widest hover:text-cyan-500 transition-colors",
+                            "relative py-2 tracking-widest hover:text-cyan-500 transition-colors",
                             location.pathname === item.path ? "text-cyan-500 font-bold" : "text-zinc-500"
                         )}
                     >
@@ -93,26 +92,26 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-zinc-900 py-12 bg-black text-xs font-mono text-zinc-500">
+            <footer className="border-t border-zinc-900 py-12 bg-black text-xs md:text-sm font-mono text-zinc-500">
                 <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
                     <div className="space-y-4">
                         <div className="text-white font-bold mb-4 uppercase tracking-widest">System</div>
-                        <a href="#" className="block hover:text-cyan-500 transition-colors">Platform Status</a>
-                        <Link to="/docs" className="block hover:text-cyan-500 transition-colors">Integration Docs</Link>
-                        <a href="/mcp.json" className="block hover:text-cyan-500 transition-colors">MCP Server Config</a>
+                        <a href="#" className="block py-1 hover:text-cyan-500 transition-colors">Platform Status</a>
+                        <Link to="/docs" className="block py-1 hover:text-cyan-500 transition-colors">Integration Docs</Link>
+                        <a href="/mcp.json" className="block py-1 hover:text-cyan-500 transition-colors">MCP Server Config</a>
                     </div>
                     <div className="space-y-4">
                         <div className="text-white font-bold mb-4 uppercase tracking-widest">Protocols</div>
-                        <Link to="/verify" className="block hover:text-cyan-500 transition-colors">Level 3 Verification</Link>
-                        <a href="#" className="block hover:text-cyan-500 transition-colors">Talent Signal</a>
-                        <a href="#" className="block hover:text-cyan-500 transition-colors">Hiring State Lock</a>
+                        <Link to="/verify" className="block py-1 hover:text-cyan-500 transition-colors">Level 3 Verification</Link>
+                        <a href="#" className="block py-1 hover:text-cyan-500 transition-colors">Talent Signal</a>
+                        <a href="#" className="block py-1 hover:text-cyan-500 transition-colors">Hiring State Lock</a>
                     </div>
                     <div className="space-y-4">
                         <div className="text-white font-bold mb-4 uppercase tracking-widest">Access</div>
-                        <Link to="/join" className="block hover:text-cyan-500 transition-colors flex items-center gap-2">
+                        <Link to="/join" className="block py-1 hover:text-cyan-500 transition-colors flex items-center gap-2">
                             For Engineers <Terminal className="w-3 h-3" />
                         </Link>
-                        <Link to="/verify" className="block hover:text-cyan-500 transition-colors">For Companies</Link>
+                        <Link to="/verify" className="block py-1 hover:text-cyan-500 transition-colors">For Companies</Link>
                     </div>
                     <div className="space-y-4">
                         <div className="p-4 border border-zinc-800 text-zinc-400 italic">
@@ -121,9 +120,31 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-6 md:px-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center opacity-50">
-                    <div className="uppercase tracking-widest">HireAHuman Inc.</div>
-                    <div className="uppercase tracking-widest">EST. 2026 // SAN FRANCISCO + BANGALORE</div>
+                <div className="max-w-7xl mx-auto px-6 md:px-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6 opacity-70">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="uppercase tracking-widest">HireAHuman Inc.</div>
+                        <div className="flex items-center gap-4">
+                            <a href="https://twitter.com/hireahuman" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className="hover:text-cyan-500 transition-colors p-2">
+                                <Twitter className="w-4 h-4" />
+                            </a>
+                            <a href="https://www.linkedin.com/company/hireahuman/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-cyan-500 transition-colors p-2">
+                                <Linkedin className="w-4 h-4" />
+                            </a>
+                            <a href="https://github.com/hireahuman" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="hover:text-cyan-500 transition-colors p-2">
+                                <Github className="w-4 h-4" />
+                            </a>
+                            <a href="https://www.youtube.com/@hireahuman" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-cyan-500 transition-colors p-2">
+                                <Youtube className="w-4 h-4" />
+                            </a>
+                            <a href="https://www.instagram.com/hireahuman/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-cyan-500 transition-colors p-2">
+                                <Instagram className="w-4 h-4" />
+                            </a>
+                            <a href="https://www.facebook.com/hireahuman/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-cyan-500 transition-colors p-2">
+                                <Facebook className="w-4 h-4" />
+                            </a>
+                        </div>
+                    </div>
+                    <div className="uppercase tracking-widest text-xs">EST. 2026 // SAN FRANCISCO + BANGALORE</div>
                 </div>
             </footer>
         </div>

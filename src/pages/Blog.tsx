@@ -13,8 +13,9 @@ export const BlogPage = () => {
                     <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight">
                         Insights on <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Modern Hiring</span>
                     </h1>
-                    <p className="text-lg text-slate-600">
+                    <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
                         Explore the future of tech recruitment, AI-driven verification, and how we're killing resume spam for good.
+                        Our engineering blog covers the latest trends in GitHub analysis, AI agent protocols, and building verification-first hiring pipelines that prioritize real code quality over keyword stuffing.
                     </p>
                 </div>
 
