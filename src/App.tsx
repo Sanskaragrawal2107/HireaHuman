@@ -70,7 +70,7 @@ const router = createBrowserRouter([
       },
       {
         path: "verify",
-        element: <ProtectedRoute><VerifyCompanyPage /></ProtectedRoute>,
+        element: <VerifyCompanyPage />,
       },
       {
         path: "recruiter-dashboard",
