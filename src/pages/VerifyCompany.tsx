@@ -32,16 +32,18 @@ export const VerifyCompanyPage = () => {
     });
     const [companyId, setCompanyId] = useState<string | null>(null);
 
-    // ── Initial Auth Check + Razorpay Script ──
+    // ── Initial Auth Check + PayU Bolt Script ──
     useEffect(() => {
-        // Load Razorpay Script
+        // Load PayU Bolt Script
         const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.src = 'https://jssdk.payu.in/bolt/bolt.min.js';
         script.async = true;
         document.body.appendChild(script);
 
         return () => {
-            document.body.removeChild(script);
+            if (script.parentNode) {
+                document.body.removeChild(script);
+            }
         };
     }, []);
 
@@ -274,57 +276,66 @@ export const VerifyCompanyPage = () => {
         setLoading(true);
         setError('');
         try {
-            // 1. Create Payment Order via Edge Function
+            // 1. Create Payment params via Edge Function
             // @ts-ignore
             const { data, error } = await insforge.functions.invoke('create-company-payment', {
                 body: { user_id: user.id, company_id: companyId, email: user.email }
             });
 
             if (error) throw error;
-            const { order_id, key_id, amount, email } = data;
+            const { key, txnid, amount, productinfo, firstname, email, surl, furl, hash, udf1, udf2, payu_base_url } = data;
 
-            // 2. Open Razorpay Checkout
-            const options = {
-                key: key_id,
-                amount: amount,
-                currency: "INR",
-                order_id: order_id,
-                name: "HireAHuman Company Verification",
-                description: "Security Deposit for Company Verification",
-                handler: async function (response: any) {
-                    // 3. Verify Payment via Edge Function
-                    // @ts-ignore
-                    const { data: verifyData, error: verifyError } = await insforge.functions.invoke('verify-company-payment', {
-                        body: {
-                            payment_id: response.razorpay_payment_id,
-                            order_id: response.razorpay_order_id,
-                            signature: response.razorpay_signature,
-                            user_id: user.id,
-                            company_id: companyId
-                        }
-                    });
+            // 2. Launch PayU Bolt checkout
+            // @ts-ignore
+            if (!window.bolt) {
+                throw new Error('PayU SDK not loaded. Please refresh and try again.');
+            }
 
-                    if (verifyError || !verifyData?.success) {
-                        alert("Payment verification failed. Please contact support.");
-                        setError("Payment verification failed. Please try again.");
-                    } else {
-                        // Success! Move to success screen
-                        setStep('success');
-                    }
-                },
-                prefill: {
-                    name: companyData.companyName,
-                    email: email,
-                    contact: ""
-                },
-                theme: {
-                    color: "#0f172a"
-                }
+            const payuData = {
+                key,
+                txnid,
+                hash,
+                amount,
+                firstname: companyData.companyName || firstname,
+                email,
+                phone: '',
+                productinfo,
+                surl,
+                furl,
+                udf1,
+                udf2,
             };
 
             // @ts-ignore
-            const rzp1 = new window.Razorpay(options);
-            rzp1.open();
+            window.bolt.launch(payuData, {
+                responseHandler: async function (response: any) {
+                    if (response.response.txnStatus === 'SUCCESS') {
+                        // 3. Verify Payment via Edge Function
+                        // @ts-ignore
+                        const { data: verifyData, error: verifyError } = await insforge.functions.invoke('verify-company-payment', {
+                            body: {
+                                txnid: txnid,
+                                user_id: user.id,
+                                company_id: companyId
+                            }
+                        });
+
+                        if (verifyError || !verifyData?.success) {
+                            alert("Payment verification failed. Please contact support.");
+                            setError("Payment verification failed. Please try again.");
+                        } else {
+                            // Success! Move to success screen
+                            setStep('success');
+                        }
+                    } else {
+                        setError('Payment was not successful. Please try again.');
+                    }
+                },
+                catchException: function (error: any) {
+                    logger.error("PayU Bolt error:", error);
+                    setError('Payment failed: ' + (error.message || 'Unknown error'));
+                }
+            });
 
         } catch (err: any) {
             logger.error("Payment error:", err);
@@ -808,7 +819,7 @@ export const VerifyCompanyPage = () => {
                                 </button>
 
                                 <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-                                    <Lock className="w-3 h-3" /> Secure payment via Razorpay
+                                    <Lock className="w-3 h-3" /> Secure payment via PayU
                                 </div>
 
                                 <p className="text-center text-xs text-slate-400 mt-4">

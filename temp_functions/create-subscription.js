@@ -1,11 +1,10 @@
 
-import Razorpay from "npm:razorpay@2.9.2";
 import { createClient } from "npm:@insforge/sdk";
 
-const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID") || "rzp_test_S846vyMlkBhDUg";
-const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET") || "6ogBi5eUEFrd4MIDl4mmLuED";
-const PLAN_NAME = "BlueTech Membership";
-const PLAN_AMOUNT = 19900; // 199.00 INR — server-enforced
+const PAYU_KEY = Deno.env.get("PAYU_KEY") || "gtKFFx";
+const PAYU_SALT = Deno.env.get("PAYU_SALT") || "4R38IvwiV57FwVpsgOvTXBdLE4tHUXFW";
+const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://test.payu.in";
+const PLAN_AMOUNT = "199.00"; // INR — server-enforced
 
 export default async function (req) {
     const corsHeaders = {
@@ -22,73 +21,55 @@ export default async function (req) {
     }
 
     try {
-        // ── Auth: Verify the caller is a logged-in user ──
+        // Auth: Verify the caller is a logged-in user
         const authHeader = req.headers.get('authorization');
         if (!authHeader) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
         }
 
         const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL");
-        const insforgeKey = Deno.env.get("ANON_KEY");
-        if (!insforgeUrl || !insforgeKey) {
+        if (!insforgeUrl) {
             throw new Error("Server configuration error");
         }
 
         const userToken = authHeader.replace('Bearer ', '');
-        const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
-        const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
-        if (authError || !user) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+        const userId = getUserIdFromToken(userToken);
+        if (!userId) {
+            return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: corsHeaders });
         }
 
         const body = await req.json();
-        const { user_id } = body;
+        const { user_id, email } = body;
 
         // Ensure the token owner matches the requested user_id
-        if (user.id !== user_id) {
+        if (userId !== user_id) {
             return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
         }
 
-        const instance = new Razorpay({
-            key_id: RAZORPAY_KEY_ID,
-            key_secret: RAZORPAY_KEY_SECRET,
-        });
+        // Generate unique transaction ID (max 25 chars for PayU)
+        const txnid = `BT${user_id.substring(0, 8)}${Date.now()}`.substring(0, 25);
+        
+        const productinfo = "BlueTech Badge Monthly";
+        const firstname = (email.split('@')[0] || 'User').substring(0, 50);
+        const surl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/dashboard?payment=success&type=subscription&txnid=${txnid}`;
+        const furl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/dashboard?payment=failed&type=subscription`;
 
-        // 1. Find or create plan (amount enforced server-side)
-        const plans = await instance.plans.all({ count: 20 });
-        let planId = plans.items.find(
-            p => p.item.name === PLAN_NAME && p.item.amount === PLAN_AMOUNT && p.period === 'monthly'
-        )?.id;
-
-        if (!planId) {
-            const plan = await instance.plans.create({
-                period: "monthly",
-                interval: 1,
-                item: {
-                    name: PLAN_NAME,
-                    amount: PLAN_AMOUNT,
-                    currency: "INR",
-                    description: "BlueTech Verification Badge - Monthly"
-                }
-            });
-            planId = plan.id;
-        }
-
-        // 2. Create Subscription
-        const subscription = await instance.subscriptions.create({
-            plan_id: planId,
-            customer_notify: 1,
-            total_count: 120,
-            quantity: 1,
-            notes: {
-                user_id: user_id,
-                user_email: user.email
-            }
-        });
+        // Generate PayU hash: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
+        const hashString = `${PAYU_KEY}|${txnid}|${PLAN_AMOUNT}|${productinfo}|${firstname}|${email}|${user_id}|||||||||${PAYU_SALT}`;
+        const hash = await generateSha512(hashString);
 
         return new Response(JSON.stringify({
-            subscription_id: subscription.id,
-            key_id: RAZORPAY_KEY_ID
+            key: PAYU_KEY,
+            txnid,
+            amount: PLAN_AMOUNT,
+            productinfo,
+            firstname,
+            email,
+            surl,
+            furl,
+            hash,
+            udf1: user_id,
+            payu_base_url: PAYU_BASE_URL
         }), {
             headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -99,4 +80,22 @@ export default async function (req) {
             status: 500, headers: corsHeaders
         });
     }
+}
+
+function getUserIdFromToken(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        return payload.sub || payload.user_id || null;
+    } catch { return null; }
+}
+
+async function generateSha512(input) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-512', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 }

@@ -28,9 +28,9 @@ export const DashboardPage = () => {
             }
         }
 
-        // Load Razorpay Script
+        // Load PayU Bolt Script
         const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.src = 'https://jssdk.payu.in/bolt/bolt.min.js';
         script.async = true;
         document.body.appendChild(script);
 
@@ -170,54 +170,64 @@ export const DashboardPage = () => {
         if (!user || !profile) return;
         setUpdating(true);
         try {
-            // 1. Create Subscription via Edge Function
+            // 1. Create Payment params via Edge Function
             // @ts-ignore
             const { data, error } = await insforge.functions.invoke('create-subscription', {
                 body: { user_id: user.id, email: user.email }
             });
 
             if (error) throw error;
-            const { subscription_id, key_id } = data;
+            const { key, txnid, amount, productinfo, firstname, email, surl, furl, hash, udf1, payu_base_url } = data;
 
-            // 2. Open Razorpay Checkout
-            const options = {
-                key: key_id,
-                subscription_id: subscription_id,
-                name: "HireAHuman BlueTech",
-                description: "Monthly Membership for Verified Badge",
-                handler: async function (response: any) {
-                    // 3. Verify Payment via Edge Function
-                    // @ts-ignore
-                    const { data: verifyData, error: verifyError } = await insforge.functions.invoke('verify-subscription', {
-                        body: {
-                            payment_id: response.razorpay_payment_id,
-                            subscription_id: response.razorpay_subscription_id,
-                            signature: response.razorpay_signature,
-                            user_id: user.id
-                        }
-                    });
+            // 2. Launch PayU Bolt checkout
+            // @ts-ignore
+            if (!window.bolt) {
+                throw new Error('PayU SDK not loaded. Please refresh and try again.');
+            }
 
-                    if (verifyError || !verifyData?.success) {
-                        alert("Verification failed. Please contact support.");
-                    } else {
-                        // Success! Update local state
-                        setProfile({ ...profile, bluetech_badge: true, bluetech_subscription_status: 'active' });
-                        alert("Membership active! You now have the BlueTech Badge.");
-                    }
-                },
-                prefill: {
-                    name: profile.display_name,
-                    email: user.email,
-                    contact: "" // accurate phone can be passed if available
-                },
-                theme: {
-                    color: "#06b6d4"
-                }
+            const payuData = {
+                key,
+                txnid,
+                hash,
+                amount,
+                firstname: profile.display_name || firstname,
+                email,
+                phone: '',
+                productinfo,
+                surl,
+                furl,
+                udf1,
             };
 
             // @ts-ignore
-            const rzp1 = new window.Razorpay(options);
-            rzp1.open();
+            window.bolt.launch(payuData, {
+                responseHandler: async function (response: any) {
+                    if (response.response.txnStatus === 'SUCCESS') {
+                        // 3. Verify Payment via Edge Function
+                        // @ts-ignore
+                        const { data: verifyData, error: verifyError } = await insforge.functions.invoke('verify-subscription', {
+                            body: {
+                                txnid: txnid,
+                                user_id: user.id
+                            }
+                        });
+
+                        if (verifyError || !verifyData?.success) {
+                            alert("Verification failed. Please contact support.");
+                        } else {
+                            // Success! Update local state
+                            setProfile({ ...profile, bluetech_badge: true, bluetech_subscription_status: 'active' });
+                            alert("Membership active! You now have the BlueTech Badge.");
+                        }
+                    } else {
+                        alert("Payment was not successful. Please try again.");
+                    }
+                },
+                catchException: function (error: any) {
+                    logger.error("PayU Bolt error:", error);
+                    alert("Payment failed: " + (error.message || 'Unknown error'));
+                }
+            });
 
         } catch (err: any) {
             logger.error("Subscription error:", err);

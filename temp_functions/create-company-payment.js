@@ -1,10 +1,9 @@
-
-import Razorpay from "npm:razorpay@2.9.2";
 import { createClient } from "npm:@insforge/sdk";
 
-const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID") || "rzp_test_S846vyMlkBhDUg";
-const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET") || "6ogBi5eUEFrd4MIDl4mmLuED";
-const COMPANY_VERIFICATION_AMOUNT = 100000; // 1000.00 INR in paise — server-enforced
+const PAYU_KEY = Deno.env.get("PAYU_KEY") || "gtKFFx";
+const PAYU_SALT = Deno.env.get("PAYU_SALT") || "4R38IvwiV57FwVpsgOvTXBdLE4tHUXFW";
+const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://test.payu.in";
+const COMPANY_AMOUNT = "1000.00"; // INR — server-enforced
 
 export default async function (req) {
     const corsHeaders = {
@@ -21,24 +20,24 @@ export default async function (req) {
     }
 
     try {
-        // ── Auth: Verify the caller is a logged-in user ──
+        // Auth: Verify the caller is a logged-in user
         const authHeader = req.headers.get('authorization');
         if (!authHeader) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
         }
 
         const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL");
-        const insforgeKey = Deno.env.get("ANON_KEY");
-        if (!insforgeUrl || !insforgeKey) {
+        if (!insforgeUrl) {
             throw new Error("Server configuration error");
         }
 
         const userToken = authHeader.replace('Bearer ', '');
-        const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
-        const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
-        if (authError || !user) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+        const userId = getUserIdFromToken(userToken);
+        if (!userId) {
+            return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: corsHeaders });
         }
+
+        const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
 
         const body = await req.json();
         const { user_id, company_id, email } = body;
@@ -48,7 +47,7 @@ export default async function (req) {
         }
 
         // Ensure the token owner matches the requested user_id
-        if (user.id !== user_id) {
+        if (userId !== user_id) {
             return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
         }
 
@@ -57,36 +56,38 @@ export default async function (req) {
             .from('companies')
             .select('id, user_id')
             .eq('id', company_id)
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .maybeSingle();
 
         if (compErr || !company) {
             return new Response(JSON.stringify({ error: "Company not found or access denied" }), { status: 403, headers: corsHeaders });
         }
 
-        const instance = new Razorpay({
-            key_id: RAZORPAY_KEY_ID,
-            key_secret: RAZORPAY_KEY_SECRET,
-        });
+        // Generate unique transaction ID (max 25 chars for PayU)
+        const txnid = `CV${company_id.substring(0, 8)}${Date.now()}`.substring(0, 25);
 
-        // Create a one-time payment order (amount enforced server-side)
-        const order = await instance.orders.create({
-            amount: COMPANY_VERIFICATION_AMOUNT,
-            currency: "INR",
-            receipt: `company_${company_id.substring(0, 8)}`,
-            notes: {
-                user_id: user_id,
-                company_id: company_id,
-                user_email: email,
-                purpose: "Company Verification Deposit"
-            }
-        });
+        const productinfo = "Company Verification Deposit";
+        const firstname = (email.split('@')[0] || 'User').substring(0, 50);
+        const surl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/verify-company?payment=success&type=company&txnid=${txnid}`;
+        const furl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/verify-company?payment=failed&type=company`;
+
+        // Generate PayU hash: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
+        const hashString = `${PAYU_KEY}|${txnid}|${COMPANY_AMOUNT}|${productinfo}|${firstname}|${email}|${user_id}|${company_id}||||||||${PAYU_SALT}`;
+        const hash = await generateSha512(hashString);
 
         return new Response(JSON.stringify({
-            order_id: order.id,
-            key_id: RAZORPAY_KEY_ID,
-            amount: COMPANY_VERIFICATION_AMOUNT,
-            email: email
+            key: PAYU_KEY,
+            txnid,
+            amount: COMPANY_AMOUNT,
+            productinfo,
+            firstname,
+            email,
+            surl,
+            furl,
+            hash,
+            udf1: user_id,
+            udf2: company_id,
+            payu_base_url: PAYU_BASE_URL
         }), {
             headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -97,4 +98,22 @@ export default async function (req) {
             status: 500, headers: corsHeaders
         });
     }
+}
+
+function getUserIdFromToken(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        return payload.sub || payload.user_id || null;
+    } catch { return null; }
+}
+
+async function generateSha512(input) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-512', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 }

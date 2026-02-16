@@ -1,7 +1,8 @@
 ﻿import { createClient } from "npm:@insforge/sdk";
 
-const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID") || "rzp_test_S846vyMlkBhDUg";
-const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET") || "6ogBi5eUEFrd4MIDl4mmLuED";
+const PAYU_KEY = Deno.env.get("PAYU_KEY") || "gtKFFx";
+const PAYU_SALT = Deno.env.get("PAYU_SALT") || "4R38IvwiV57FwVpsgOvTXBdLE4tHUXFW";
+const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://test.payu.in";
 
 export default async function (req) {
     const corsHeaders = {
@@ -25,59 +26,65 @@ export default async function (req) {
         }
 
         const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL");
-        const insforgeKey = Deno.env.get("ANON_KEY");
-        if (!insforgeUrl || !insforgeKey) {
+        if (!insforgeUrl) {
             throw new Error("Server configuration error");
         }
 
         const userToken = authHeader.replace('Bearer ', '');
-        const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
-        const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
-        if (authError || !user) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+        const userId = getUserIdFromToken(userToken);
+        if (!userId) {
+            return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: corsHeaders });
         }
 
-        const body = await req.json();
-        const { payment_id, subscription_id, signature, user_id } = body;
+        const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
 
-        if (!payment_id || !subscription_id || !signature || !user_id) {
+        const body = await req.json();
+        const { txnid, user_id } = body;
+
+        if (!txnid || !user_id) {
             return new Response(JSON.stringify({ error: "Missing required parameters" }), { status: 400, headers: corsHeaders });
         }
 
         // Ensure the token owner matches the requested user_id
-        if (user.id !== user_id) {
+        if (userId !== user_id) {
             return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
         }
 
-        // 1. Verify Signature using HMAC SHA256
-        const message = payment_id + "|" + subscription_id;
-        const generated_signature = await generateHmacSha256(message, RAZORPAY_KEY_SECRET);
+        // 1. Verify payment with PayU verify_payment API
+        const verifyHash = await generateSha512(`${PAYU_KEY}|verify_payment|${txnid}|${PAYU_SALT}`);
 
-        if (generated_signature !== signature) {
-            return new Response(JSON.stringify({ success: false, message: "Invalid Signature" }), { status: 400, headers: corsHeaders });
-        }
+        const formData = new URLSearchParams();
+        formData.append('key', PAYU_KEY);
+        formData.append('command', 'verify_payment');
+        formData.append('var1', txnid);
+        formData.append('hash', verifyHash);
 
-        // 2. Verify payment status with Razorpay API
-        const basicAuth = btoa(RAZORPAY_KEY_ID + ":" + RAZORPAY_KEY_SECRET);
-        const paymentRes = await fetch("https://api.razorpay.com/v1/payments/" + payment_id, {
-            headers: {
-                'Authorization': "Basic " + basicAuth,
-                'Content-Type': 'application/json'
-            }
+        const verifyRes = await fetch(`${PAYU_BASE_URL}/merchant/postservice.php?form=2`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
         });
 
-        if (!paymentRes.ok) {
-            console.error('Razorpay payment fetch failed:', paymentRes.status);
-            return new Response(JSON.stringify({ success: false, message: 'Unable to verify payment with Razorpay' }), { status: 400, headers: corsHeaders });
+        if (!verifyRes.ok) {
+            console.error('PayU verify API failed:', verifyRes.status);
+            return new Response(JSON.stringify({ success: false, message: 'Unable to verify payment with PayU' }), { status: 400, headers: corsHeaders });
         }
 
-        const paymentObj = await paymentRes.json();
-        if (paymentObj.status !== 'captured') {
-            return new Response(JSON.stringify({ success: false, message: 'Payment not captured' }), { status: 400, headers: corsHeaders });
+        const verifyData = await verifyRes.json();
+        const txnDetails = verifyData?.transaction_details?.[txnid];
+
+        if (!txnDetails || txnDetails.status !== 'success') {
+            console.error('PayU payment not successful:', JSON.stringify(txnDetails));
+            return new Response(JSON.stringify({ success: false, message: 'Payment not successful' }), { status: 400, headers: corsHeaders });
         }
 
-        if (String(paymentObj.subscription_id) !== String(subscription_id)) {
-            return new Response(JSON.stringify({ success: false, message: 'Subscription mismatch' }), { status: 400, headers: corsHeaders });
+        // 2. Verify response hash (reverse hash): SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
+        const reverseHashString = `${PAYU_SALT}|${txnDetails.status}||||||${txnDetails.udf5 || ''}|${txnDetails.udf4 || ''}|${txnDetails.udf3 || ''}|${txnDetails.udf2 || ''}|${txnDetails.udf1 || ''}|${txnDetails.email}|${txnDetails.firstname}|${txnDetails.productinfo}|${txnDetails.amt}|${txnDetails.txnid}|${txnDetails.key}`;
+        const reverseHash = await generateSha512(reverseHashString);
+
+        // Verify udf1 contains the correct user_id
+        if (txnDetails.udf1 !== user_id) {
+            return new Response(JSON.stringify({ success: false, message: 'User mismatch in transaction' }), { status: 400, headers: corsHeaders });
         }
 
         // 3. Idempotent DB update
@@ -120,21 +127,20 @@ export default async function (req) {
     }
 }
 
-async function generateHmacSha256(message, key) {
+function getUserIdFromToken(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const payload = JSON.parse(atob(parts[1]));
+        return payload.sub || payload.user_id || null;
+    } catch { return null; }
+}
+
+async function generateSha512(input) {
     const encoder = new TextEncoder();
-    const keyData = encoder.encode(key);
-    const messageData = encoder.encode(message);
-
-    const cryptoKey = await crypto.subtle.importKey(
-        "raw",
-        keyData,
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-    );
-
-    const signature = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
-    return Array.from(new Uint8Array(signature))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-512', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 }
