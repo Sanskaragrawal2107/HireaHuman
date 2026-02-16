@@ -30,25 +30,25 @@ export default async function(req) {
       });
     }
 
-    const client = createClient({
-      baseUrl: Deno.env.get('INSFORGE_BASE_URL'),
-      edgeFunctionToken: userToken,
-    });
-
-    // Verify user identity
-    const { data: userData } = await client.auth.getCurrentUser();
-    if (!userData?.user?.id) {
+    // Decode JWT to extract user ID (getCurrentUser doesn't work in edge functions)
+    const userId = getUserIdFromToken(userToken);
+    if (!userId) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    const client = createClient({
+      baseUrl: Deno.env.get('INSFORGE_BASE_URL'),
+      edgeFunctionToken: userToken,
+    });
+
     // Verify user owns a verified company
     const { data: company } = await client.database
       .from('companies')
       .select('id, name, email, status')
-      .eq('user_id', userData.user.id)
+      .eq('user_id', userId)
       .single();
 
     if (!company || company.status !== 'verified') {
@@ -120,6 +120,13 @@ export default async function(req) {
         .single();
 
       if (profile?.id) {
+        // Record profile view for the hire interaction
+        await anonClient.database.from('profile_views').insert([{
+          profile_id: profile.id,
+          viewer_company_id: company.id,
+          source: 'hire_email',
+        }]);
+
         await client.database.from('hirings').insert([{
           candidate_id: profile.id,
           company_id: company.id,
@@ -141,4 +148,13 @@ export default async function(req) {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+}
+
+function getUserIdFromToken(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload.sub || payload.user_id || null;
+  } catch { return null; }
 }

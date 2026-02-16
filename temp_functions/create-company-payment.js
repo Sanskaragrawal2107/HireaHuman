@@ -32,11 +32,14 @@ export default async function (req) {
         }
 
         const userToken = authHeader.replace('Bearer ', '');
+        
+        // Decode JWT to extract user ID
         const userId = getUserIdFromToken(userToken);
         if (!userId) {
             return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: corsHeaders });
         }
 
+        // Create client with edgeFunctionToken for RLS-protected DB queries
         const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
 
         const body = await req.json();
