@@ -1,55 +1,66 @@
 
 import Razorpay from "npm:razorpay@2.9.2";
+import { createClient } from "npm:@insforge/sdk";
 
-const RAZORPAY_KEY_ID = "rzp_test_S846vyMlkBhDUg";
-const RAZORPAY_KEY_SECRET = "6ogBi5eUEFrd4MIDl4mmLuED";
+const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID") || "rzp_test_S846vyMlkBhDUg";
+const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET") || "6ogBi5eUEFrd4MIDl4mmLuED";
 const PLAN_NAME = "BlueTech Membership";
-const PLAN_AMOUNT = 19900; // 199.00 INR
+const PLAN_AMOUNT = 19900; // 199.00 INR — server-enforced
 
 export default async function (req) {
-    console.log("Function create-subscription started");
-
-    // CORS headers
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    }
+    };
 
     if (req.method === 'OPTIONS') {
-        console.log("Handling OPTIONS request");
-        return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders });
     }
 
     if (req.method !== "POST") {
-        console.log("Method not allowed:", req.method);
         return new Response("Method not allowed", { status: 405, headers: corsHeaders });
     }
 
     try {
-        console.log("Parsing request body...");
-        const body = await req.json();
-        console.log("Request body:", body);
-        const { user_id, email } = body;
-
-        if (!user_id) {
-            throw new Error("User ID required");
+        // ── Auth: Verify the caller is a logged-in user ──
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
         }
 
-        console.log("Initializing Razorpay instance...");
+        const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL");
+        const insforgeKey = Deno.env.get("ANON_KEY");
+        if (!insforgeUrl || !insforgeKey) {
+            throw new Error("Server configuration error");
+        }
+
+        const userToken = authHeader.replace('Bearer ', '');
+        const insforge = createClient({ baseUrl: insforgeUrl, edgeFunctionToken: userToken });
+        const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
+        if (authError || !user) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+        }
+
+        const body = await req.json();
+        const { user_id } = body;
+
+        // Ensure the token owner matches the requested user_id
+        if (user.id !== user_id) {
+            return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
+        }
+
         const instance = new Razorpay({
             key_id: RAZORPAY_KEY_ID,
             key_secret: RAZORPAY_KEY_SECRET,
         });
 
-        // 1. Check if plan exists
-        console.log("Fetching plans...");
+        // 1. Find or create plan (amount enforced server-side)
         const plans = await instance.plans.all({ count: 20 });
-        console.log("Plans fetched:", plans);
-
-        let planId = plans.items.find(p => p.item.name === PLAN_NAME && p.item.amount === PLAN_AMOUNT && p.period === 'monthly')?.id;
+        let planId = plans.items.find(
+            p => p.item.name === PLAN_NAME && p.item.amount === PLAN_AMOUNT && p.period === 'monthly'
+        )?.id;
 
         if (!planId) {
-            console.log("Plan not found, creating new plan...");
             const plan = await instance.plans.create({
                 period: "monthly",
                 interval: 1,
@@ -60,26 +71,20 @@ export default async function (req) {
                     description: "BlueTech Verification Badge - Monthly"
                 }
             });
-            console.log("Plan created:", plan);
             planId = plan.id;
-        } else {
-            console.log("Plan found:", planId);
         }
 
         // 2. Create Subscription
-        // Start immediately
-        console.log("Creating subscription...");
         const subscription = await instance.subscriptions.create({
             plan_id: planId,
             customer_notify: 1,
-            total_count: 120, // 10 years
+            total_count: 120,
             quantity: 1,
             notes: {
                 user_id: user_id,
-                user_email: email
+                user_email: user.email
             }
         });
-        console.log("Subscription created:", subscription);
 
         return new Response(JSON.stringify({
             subscription_id: subscription.id,
@@ -89,7 +94,9 @@ export default async function (req) {
         });
 
     } catch (error) {
-        console.error("Error in create-subscription:", error);
-        return new Response(JSON.stringify({ error: error.message, stack: error.stack }), { status: 500, headers: corsHeaders });
+        console.error("create-subscription error:", error.message);
+        return new Response(JSON.stringify({ error: "Payment initialization failed" }), {
+            status: 500, headers: corsHeaders
+        });
     }
 }

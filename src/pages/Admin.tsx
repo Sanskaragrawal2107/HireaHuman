@@ -2,8 +2,11 @@
 import { useEffect, useState } from 'react';
 import { insforge } from '../lib/insforge';
 import { CheckCircle, XCircle, Clock, Building2, Globe, Mail, ExternalLink, Loader2, Shield, Filter, Search } from 'lucide-react';
+import { logger } from '../lib/logger';
+import { useAuth } from '../context/AuthContext';
 
 export const AdminPage = () => {
+    const { user: authUser, loading: authContextLoading } = useAuth();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [companies, setCompanies] = useState<any[]>([]);
@@ -24,22 +27,31 @@ export const AdminPage = () => {
     const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
     useEffect(() => {
-        checkSession();
-    }, []);
+        if (!authContextLoading) {
+            checkAdminStatus();
+        }
+    }, [authContextLoading, authUser]);
 
-    // ... (keep authentication logic same)
-
-    const checkSession = async () => {
+    // Server-side admin verification via edge function
+    const checkAdminStatus = async () => {
         try {
-            const { data } = await insforge.auth.getCurrentSession();
-            if (data?.session?.user?.email === 'sanskarceo@gmail.com') {
+            if (!authUser) {
+                setAuthLoading(false);
+                return;
+            }
+            // Call server-side admin check function
+            const { data, error } = await insforge.functions.invoke('check-admin', {
+                method: 'GET',
+            });
+            if (!error && data?.isAdmin) {
                 setIsAuthenticated(true);
                 fetchCompanies();
             } else {
+                setIsAuthenticated(false);
                 setAuthLoading(false);
             }
         } catch (error) {
-            console.error("Session check error:", error);
+            logger.error("Admin check error:", error);
             setAuthLoading(false);
         }
     };
@@ -50,25 +62,26 @@ export const AdminPage = () => {
         setLoginError('');
 
         try {
-            if (email !== 'sanskarceo@gmail.com') {
-                throw new Error("Unauthorized access. Admin only.");
-            }
-
-            const { data, error } = await insforge.auth.signInWithPassword({
+            const { error } = await insforge.auth.signInWithPassword({
                 email,
                 password
             });
 
             if (error) throw error;
 
-            if (data?.user?.email === 'sanskarceo@gmail.com') {
-                setIsAuthenticated(true);
-                fetchCompanies();
-            } else {
+            // After login, verify admin status server-side
+            const { data: adminData, error: adminError } = await insforge.functions.invoke('check-admin', {
+                method: 'GET',
+            });
+
+            if (adminError || !adminData?.isAdmin) {
                 await insforge.auth.signOut();
                 localStorage.removeItem('hireahuman_manual_session');
-                throw new Error("Unauthorized access.");
+                throw new Error("Unauthorized access. Admin privileges required.");
             }
+
+            setIsAuthenticated(true);
+            fetchCompanies();
         } catch (err: any) {
             setLoginError(err.message || "Login failed");
         } finally {
@@ -87,7 +100,7 @@ export const AdminPage = () => {
             if (error) throw error;
             if (data) setCompanies(data);
         } catch (err) {
-            console.error("Error fetching companies:", err);
+            logger.error("Error fetching companies:", err);
         } finally {
             setLoading(false);
             setAuthLoading(false);
@@ -113,7 +126,7 @@ export const AdminPage = () => {
             setRejectReason('');
             setSelectedCompanyId(null);
         } catch (err) {
-            console.error("Error updating status:", err);
+            logger.error("Error updating status:", err);
         } finally {
             setActionLoading(null);
         }

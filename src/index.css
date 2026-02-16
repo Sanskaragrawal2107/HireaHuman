@@ -7,6 +7,15 @@
 @layer base {
   body {
     @apply bg-black text-zinc-100 font-sans overflow-x-hidden;
+    /* Optimize text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Reduce layout shift from images */
+  img {
+    content-visibility: auto;
   }
 }
 

@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { insforge } from '../lib/insforge';
 import { MapPin, Briefcase, Zap, Github, ExternalLink } from 'lucide-react';
+import { logger } from '../lib/logger';
 
 function cn(...inputs: (string | undefined | null)[]): string {
     return twMerge(clsx(inputs));
@@ -23,37 +24,33 @@ export const LiveMetrics = () => {
     useEffect(() => {
         const fetchRealStats = async () => {
             try {
-                // Count profiles
-                const { count: engineerCount } = await insforge.database
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
-
-                // Count verified companies
-                const { count: companyCount } = await insforge.database
-                    .from('companies')
-                    .select('*', { count: 'exact', head: true });
-
-                // Count available engineers
-                const { count: availableCount } = await insforge.database
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('employment_status', 'AVAILABLE');
-
-                // Count bluetech members
-                const { count: bluetechCount } = await insforge.database
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('bluetech_badge', true);
+                // Parallelize all 4 count queries instead of sequential
+                const [engineersRes, companiesRes, availableRes, bluetechRes] = await Promise.all([
+                    insforge.database
+                        .from('profiles')
+                        .select('*', { count: 'exact', head: true }),
+                    insforge.database
+                        .from('companies')
+                        .select('*', { count: 'exact', head: true }),
+                    insforge.database
+                        .from('profiles')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('employment_status', 'AVAILABLE'),
+                    insforge.database
+                        .from('profiles')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('bluetech_badge', true),
+                ]);
 
                 setMetrics(prev => prev.map(m => {
-                    if (m.id === 'engineers' && engineerCount !== null) return { ...m, value: engineerCount };
-                    if (m.id === 'companies' && companyCount !== null) return { ...m, value: companyCount };
-                    if (m.id === 'available' && availableCount !== null) return { ...m, value: availableCount };
-                    if (m.id === 'bluetech' && bluetechCount !== null) return { ...m, value: bluetechCount };
+                    if (m.id === 'engineers' && engineersRes.count !== null) return { ...m, value: engineersRes.count };
+                    if (m.id === 'companies' && companiesRes.count !== null) return { ...m, value: companiesRes.count };
+                    if (m.id === 'available' && availableRes.count !== null) return { ...m, value: availableRes.count };
+                    if (m.id === 'bluetech' && bluetechRes.count !== null) return { ...m, value: bluetechRes.count };
                     return m;
                 }));
             } catch (err) {
-                console.error("Failed to fetch live metrics", err);
+                logger.error("Failed to fetch live metrics", err);
             }
         };
 

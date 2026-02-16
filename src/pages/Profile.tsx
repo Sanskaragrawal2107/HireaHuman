@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { insforge } from '../lib/insforge';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { logger } from '../lib/logger';
+import { sanitizeText, sanitizeUrl } from '../lib/sanitize';
 import { Terminal, Save, User, Briefcase, Code, MapPin, Github, Linkedin, AlertCircle, Loader, Plus, X, Search, Globe, Sparkles, ChevronDown, FolderGit2, Target, ExternalLink } from 'lucide-react';
 
 // ──────────────────────────────────────────────
@@ -326,7 +328,7 @@ export const ProfilePage = () => {
                 }));
             }
         } catch (err: any) {
-            console.error("Check user error", err);
+            logger.error("Check user error", err);
             setError("Failed to load user data. Please refresh.");
         } finally {
             setLoading(false);
@@ -359,23 +361,36 @@ export const ProfilePage = () => {
         }
 
         try {
+            // Sanitize all user inputs before persisting
             const payload: any = {
-                handle: formData.handle,
-                display_name: formData.display_name,
-                bio: formData.bio,
-                location: formData.location,
-                role_title: formData.role_title,
-                years_of_experience: formData.years_of_experience,
-                skills: formData.skills,
-                github_url: formData.github_url,
-                linkedin_url: formData.linkedin_url,
-                leetcode_url: formData.leetcode_url,
-                preferred_location: formData.preferred_location,
-                avatar_url: formData.avatar_url,
-                employment_status: formData.employment_status,
-                experience_history: formData.experience_history,
-                projects: formData.projects,
-                job_target: formData.job_target
+                handle: sanitizeText(formData.handle, 40),
+                display_name: sanitizeText(formData.display_name, 100),
+                bio: sanitizeText(formData.bio, 1000),
+                location: sanitizeText(formData.location, 100),
+                role_title: sanitizeText(formData.role_title, 100),
+                years_of_experience: Math.max(0, Math.min(50, Number(formData.years_of_experience) || 0)),
+                skills: formData.skills.map(s => sanitizeText(s, 60)).filter(Boolean),
+                github_url: sanitizeUrl(formData.github_url),
+                linkedin_url: sanitizeUrl(formData.linkedin_url),
+                leetcode_url: sanitizeUrl(formData.leetcode_url),
+                preferred_location: sanitizeText(formData.preferred_location, 100),
+                avatar_url: sanitizeUrl(formData.avatar_url),
+                employment_status: ['AVAILABLE', 'OPEN', 'BUSY'].includes(formData.employment_status)
+                    ? formData.employment_status : 'AVAILABLE',
+                experience_history: formData.experience_history.map(exp => ({
+                    company: sanitizeText(exp.company, 100),
+                    role: sanitizeText(exp.role, 100),
+                    from: sanitizeText(exp.from, 20),
+                    to: sanitizeText(exp.to, 20),
+                })),
+                projects: formData.projects.map(proj => ({
+                    title: sanitizeText(proj.title, 120),
+                    description: sanitizeText(proj.description, 500),
+                    tech_stack: sanitizeText(proj.tech_stack, 200),
+                    url: sanitizeUrl(proj.url),
+                })),
+                job_target: ['internship', 'full_time'].includes(formData.job_target)
+                    ? formData.job_target : 'full_time'
             };
 
             if (profileExists) {
@@ -404,7 +419,7 @@ export const ProfilePage = () => {
             setSuccess("Profile saved successfully!");
             setTimeout(() => navigate('/dashboard'), 1500);
         } catch (err: any) {
-            console.error("Save Error:", err);
+            logger.error("Save Error:", err);
             setError(err.message || "Failed to save profile.");
         } finally {
             setSaving(false);

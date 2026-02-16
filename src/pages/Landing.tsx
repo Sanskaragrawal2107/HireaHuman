@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Shield, Code, Cpu, Database, Github, Zap, Search, Lock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
+import { logger } from '../lib/logger';
 
 const TECH_STACK = [
     "React", "Node.js", "Python", "Rust", "Go", "Docker", "Kubernetes", "AWS", "TensorFlow",
@@ -19,7 +20,7 @@ const ScrollMarquee = ({ items, direction = 1, speed = 50 }: { items: string[], 
                 animate={{ x: direction === 1 ? [0, -1000] : [-1000, 0] }}
                 transition={{ ease: "linear", duration: speed, repeat: Infinity }}
             >
-                {[...items, ...items, ...items, ...items].map((item, i) => (
+                {[...items, ...items].map((item, i) => (
                     <span key={i} className="text-cyan-500/80 font-mono text-xs uppercase tracking-widest px-4 border-r border-zinc-800/50 last:border-0 flex items-center gap-2 text-shadow-glow">
                         <Code className="w-3 h-3 text-cyan-500" /> {item}
                     </span>
@@ -42,27 +43,28 @@ export const LandingPage = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const { count: profileCount } = await insforge.database
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
-
-                const { count: companyCount } = await insforge.database
-                    .from('companies')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('status', 'verified');
-
-                const { count: availableCount } = await insforge.database
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('employment_status', 'AVAILABLE');
+                // Parallelize all 3 count queries
+                const [profilesRes, companiesRes, availableRes] = await Promise.all([
+                    insforge.database
+                        .from('profiles')
+                        .select('*', { count: 'exact', head: true }),
+                    insforge.database
+                        .from('companies')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('status', 'verified'),
+                    insforge.database
+                        .from('profiles')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('employment_status', 'AVAILABLE'),
+                ]);
 
                 setStats({
-                    totalProfiles: profileCount || 0,
-                    verifiedCompanies: companyCount || 0,
-                    availableEngineers: availableCount || 0,
+                    totalProfiles: profilesRes.count || 0,
+                    verifiedCompanies: companiesRes.count || 0,
+                    availableEngineers: availableRes.count || 0,
                 });
             } catch (err) {
-                console.error("Stats fetch error:", err);
+                logger.error("Stats fetch error:", err);
             }
         };
         fetchStats();

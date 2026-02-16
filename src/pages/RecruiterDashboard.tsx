@@ -1,9 +1,10 @@
 
 import { useEffect, useState } from 'react';
-import { Settings, Clock, CheckCircle, XCircle, Building2, Users, Briefcase, ExternalLink, Globe, Loader2, LogOut, BarChart3, Shield, UserCheck, Mail, MapPin, Star, Calendar } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Settings, Clock, CheckCircle, XCircle, Building2, Users, Briefcase, ExternalLink, Globe, Loader2, LogOut, Shield, UserCheck, Mail, MapPin, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 import { RecruiterChatbot } from '../components/RecruiterChatbot';
+import { logger } from '../lib/logger';
 
 interface HiringRecord {
     id: string;
@@ -107,7 +108,7 @@ export const RecruiterDashboard = () => {
         try {
             await insforge.database.from('companies').update({ description }).eq('id', company.id);
         } catch (err) {
-            console.error('Failed to update description:', err);
+            logger.error('Failed to update description:', err);
         } finally {
             setSavingDesc(false);
         }
@@ -119,7 +120,7 @@ export const RecruiterDashboard = () => {
             localStorage.removeItem('hireahuman_manual_session');
             window.location.href = '/';
         } catch (err) {
-            console.error('Logout error:', err);
+            logger.error('Logout error:', err);
             window.location.href = '/';
         }
     };

@@ -5,6 +5,7 @@ import { X, Send, User, Bot, MapPin, Briefcase, Maximize2, Minimize2, Wrench, Ch
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { insforge } from '../lib/insforge';
+import { logger } from '../lib/logger';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -106,51 +107,28 @@ const EmailDraftComponent = ({ to, to_name, candidate_handle, subject, body }: E
         setError(null);
 
         try {
-            // Send to Make.com webhook
-            const response = await fetch('https://hook.eu1.make.com/3komnjzx9fhwggdsfep7p16utck1zt20', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            // Send via server-side edge function (webhook URL stays server-side)
+            const { data, error: fnError } = await insforge.functions.invoke('send-recruiter-email', {
+                body: {
                     to: editedTo,
                     subject: editedSubject,
-                    body: editedBody,
-                    from_company: company.name,
-                    recruiter_email: company.email,
-                }),
+                    emailBody: editedBody,
+                    candidate_handle,
+                },
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to send email');
+            if (fnError) {
+                throw new Error(fnError.message || 'Failed to send email');
             }
 
-            console.log('Email sent. Looking up candidate with handle:', candidate_handle);
-
-            // Record hiring offer in database
-            // First get candidate profile ID
-            const { data: profile, error: queryError } = await insforge.database
-                .from('profiles')
-                .select('id')
-                .eq('handle', candidate_handle)
-                .single();
-
-            console.log('Profile lookup for hiring record:', { profile, queryError });
-
-            if (profile?.id) {
-                await insforge.database.from('hirings').insert([{
-                    candidate_id: profile.id,
-                    company_id: company.id,
-                    status: 'offered',
-                    email_sent: true,
-                    notes: `Email sent: ${editedSubject}`,
-                }]);
-                console.log('Hiring record created');
-            } else {
-                console.warn('Could not create hiring record - profile not found');
+            if (data?.error) {
+                throw new Error(data.error);
             }
 
+            logger.info('Email sent via edge function');
             setSent(true);
         } catch (err) {
-            console.error('Email send error:', err);
+            logger.error('Email send error:', err);
             setError(err instanceof Error ? err.message : 'Failed to send email');
         } finally {
             setSending(false);
@@ -299,7 +277,7 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
         setError(null);
 
         try {
-            console.log('Looking up profile for handle:', candidate_handle);
+            logger.info('Looking up profile for handle:', candidate_handle);
             
             // Get candidate profile
             const { data: profile, error: queryError } = await insforge.database
@@ -308,7 +286,7 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
                 .eq('handle', candidate_handle)
                 .single();
 
-            console.log('Profile lookup result:', { profile, queryError });
+            logger.info('Profile lookup result:', { profile, queryError });
 
             if (queryError) {
                 throw new Error(`Database error: ${queryError.message}`);
@@ -318,7 +296,7 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
                 throw new Error(`Candidate with handle "@${candidate_handle}" not found in database`);
             }
 
-            console.log('Found profile ID:', profile.id);
+            logger.info('Found profile ID:', profile.id);
 
             // Update hiring status
             await insforge.database
@@ -339,10 +317,10 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
                 })
                 .eq('id', profile.id);
 
-            console.log('Candidate marked as hired');
+            logger.info('Candidate marked as hired');
             setMarked(true);
         } catch (err) {
-            console.error('Mark hired error:', err);
+            logger.error('Mark hired error:', err);
             setError(err instanceof Error ? err.message : 'Failed to mark as hired');
         } finally {
             setMarking(false);

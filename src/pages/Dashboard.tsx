@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Shield, Loader, Upload, User, Code, MapPin, Briefcase, FileText, Github, Linkedin, Star, Zap, Eye, Printer, Globe, FolderGit2, Target, ExternalLink, TrendingUp, BarChart3 } from 'lucide-react';
 import { insforge } from '../lib/insforge';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { logger } from '../lib/logger';
 import { useAuth } from '../context/AuthContext';
 
 export const DashboardPage = () => {
@@ -35,7 +35,10 @@ export const DashboardPage = () => {
         document.body.appendChild(script);
 
         return () => {
-            document.body.removeChild(script);
+            // Only remove if script is still in DOM
+            if (script.parentNode) {
+                document.body.removeChild(script);
+            }
         };
     }, [authUser, authLoading, navigate]);
 
@@ -64,16 +67,16 @@ export const DashboardPage = () => {
                 const { data: viewsData, error: viewsError } = await insforge.database
                     .from('profile_views')
                     .select('id')
-                    .eq('profile_id', user.id)
+                    .eq('profile_id', currentUser.id)
                     .gte('viewed_at', monthStart);
                 if (!viewsError && viewsData) {
                     setMonthlyViews(viewsData.length);
                 }
             } catch (viewErr) {
-                console.error('Failed to load profile views:', viewErr);
+                logger.error('Failed to load profile views:', viewErr);
             }
         } catch (err) {
-            console.error("Dashboard load error:", err);
+            logger.error("Dashboard load error:", err);
         } finally {
             setLoading(false);
         }
@@ -91,7 +94,7 @@ export const DashboardPage = () => {
             if (error) throw error;
             setProfile({ ...profile, ...updates });
         } catch (err) {
-            console.error("Update error:", err);
+            logger.error("Update error:", err);
         } finally {
             setUpdating(false);
         }
@@ -132,7 +135,7 @@ export const DashboardPage = () => {
 
             await updateProfile({ avatar_url: data.url });
         } catch (err) {
-            console.error('Upload error:', err);
+            logger.error('Upload error:', err);
             alert('Failed to upload photo');
         } finally {
             setUploading(false);
@@ -148,7 +151,7 @@ export const DashboardPage = () => {
             // Force a full page reload to clear all state
             window.location.href = '/';
         } catch (err) {
-            console.error('Logout error:', err);
+            logger.error('Logout error:', err);
             // Still redirect even if signOut fails
             window.location.href = '/';
         }
@@ -218,7 +221,7 @@ export const DashboardPage = () => {
             rzp1.open();
 
         } catch (err: any) {
-            console.error("Subscription error:", err);
+            logger.error("Subscription error:", err);
             alert("Failed to start subscription: " + err.message);
         } finally {
             setUpdating(false);

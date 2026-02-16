@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { insforge } from '../lib/insforge';
 import { EngineerCard } from '../components/UiComponents';
 import { Filter, Search, Terminal, MapPin, Code, X, Zap } from 'lucide-react';
+import { logger } from '../lib/logger';
 
 export const BrowsePage = () => {
     const [profiles, setProfiles] = useState<any[]>([]);
@@ -50,7 +51,7 @@ export const BrowsePage = () => {
             if (error) {
                 // Handle JWT expiration error
                 if ((error.code === 'PGRST301' || error.message?.includes('JWT')) && retryCount === 0) {
-                    console.warn('JWT expired, clearing stored session and retrying with anonKey...');
+                    logger.warn('JWT expired, clearing stored session and retrying with anonKey...');
                     
                     // Clear expired token from storage
                     localStorage.removeItem('hireahuman_manual_session');
@@ -76,7 +77,7 @@ export const BrowsePage = () => {
             }
             if (data) setProfiles(data);
         } catch (err) {
-            console.error("Error fetching profiles:", err);
+            logger.error("Error fetching profiles:", err);
         } finally {
             setLoading(false);
         }

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, Terminal, Cpu, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { logger } from '../lib/logger';
 
 export const JoinPage = () => {
     const [email, setEmail] = useState('');
@@ -36,7 +37,7 @@ export const JoinPage = () => {
             provider: 'google',
             redirectTo: `${window.location.origin}/profile`
         });
-        if (error) console.error(error);
+        if (error) logger.error(error);
         setLoading(false);
     };
 
@@ -78,8 +79,28 @@ export const JoinPage = () => {
                     setLoading(false);
                     return;
                 }
-                if (password.length < 6) {
-                    setError('Password must be at least 6 characters long');
+                if (password.length < 8) {
+                    setError('Password must be at least 8 characters long');
+                    setLoading(false);
+                    return;
+                }
+                if (!/[A-Z]/.test(password)) {
+                    setError('Password must contain at least one uppercase letter');
+                    setLoading(false);
+                    return;
+                }
+                if (!/[a-z]/.test(password)) {
+                    setError('Password must contain at least one lowercase letter');
+                    setLoading(false);
+                    return;
+                }
+                if (!/[0-9]/.test(password)) {
+                    setError('Password must contain at least one number');
+                    setLoading(false);
+                    return;
+                }
+                if (!/[^A-Za-z0-9]/.test(password)) {
+                    setError('Password must contain at least one special character');
                     setLoading(false);
                     return;
                 }
@@ -112,7 +133,7 @@ export const JoinPage = () => {
                 }
             }
         } catch (error: any) {
-            console.error(error);
+            logger.error(error);
             // Error already set in specific handlers above
         } finally {
             setLoading(false);
@@ -131,7 +152,7 @@ export const JoinPage = () => {
             }
         });
         if (error) {
-            console.error(error);
+            logger.error(error);
             setError(error.message || 'Failed to send magic link. Please try again.');
         } else {
             setMagicLinkSent(true);
@@ -173,7 +194,7 @@ export const JoinPage = () => {
                 }, 2000);
             }
         } catch (error: any) {
-            console.error(error);
+            logger.error(error);
         } finally {
             setVerifyingOtp(false);
         }

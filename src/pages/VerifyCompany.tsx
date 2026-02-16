@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { Shield, CheckCircle, Building, Globe, CreditCard, Lock, Mail, Eye, EyeOff, ArrowRight, ArrowLeft, Loader2, AlertTriangle, Briefcase } from 'lucide-react';
+import { Shield, CheckCircle, Building, Globe, CreditCard, Lock, Mail, Eye, EyeOff, ArrowRight, Loader2, AlertTriangle, Briefcase } from 'lucide-react';
 import { insforge } from '../lib/insforge';
 import { useNavigate } from 'react-router-dom';
+import { logger } from '../lib/logger';
 
 export const VerifyCompanyPage = () => {
     const navigate = useNavigate();
@@ -257,7 +258,7 @@ export const VerifyCompanyPage = () => {
             }
             setStep('payment');
         } catch (err: any) {
-            console.error("Company insert error:", err);
+            logger.error("Company insert error:", err);
             setError(err.message || 'Failed to register company. You may already have a company registered.');
         } finally {
             setLoading(false);
@@ -326,7 +327,7 @@ export const VerifyCompanyPage = () => {
             rzp1.open();
 
         } catch (err: any) {
-            console.error("Payment error:", err);
+            logger.error("Payment error:", err);
             setError(err.message || 'Failed to initiate payment. Please try again.');
         } finally {
             setLoading(false);

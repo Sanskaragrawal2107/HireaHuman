@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { insforge } from '../lib/insforge';
+import { logger } from '../lib/logger';
 
 interface AuthContextType {
     user: any | null;
@@ -37,7 +38,7 @@ function isTokenExpired(token: string): boolean {
         const expiryTime = decoded.exp * 1000; // Convert seconds to milliseconds
         return Date.now() > expiryTime;
     } catch (error) {
-        console.error('Error checking token expiration:', error);
+        logger.error('Error checking token expiration:', error);
         return true; // If we can't parse it, assume it's invalid
     }
 }
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                 // Validate token is not expired
                 if (isTokenExpired(newToken)) {
-                    console.warn('Session token is expired, clearing session');
+                    logger.warn('Session token is expired, clearing session');
                     clearAuth();
                     setLoading(false);
                     return;
@@ -118,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                     // Validate token is not expired before using it
                     if (storedToken && isTokenExpired(storedToken)) {
-                        console.warn('Stored token is expired, clearing session');
+                        logger.warn('Stored token is expired, clearing session');
                         clearAuth();
                         setLoading(false);
                         return;
@@ -147,7 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         setSession({ user: storedUser, accessToken: storedToken });
                     }
                 } catch (e) {
-                    console.error('Failed to parse or validate stored session:', e);
+                    logger.error('Failed to parse or validate stored session:', e);
                     clearAuth();
                     setLoading(false);
                     return;
@@ -159,7 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const { data, error } = await insforge.auth.getCurrentUser();
 
             if (error) {
-                console.error('Auth error:', error);
+                logger.error('Auth error:', error);
                 clearAuth();
                 setLoading(false);
                 return;
@@ -192,7 +193,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
             }
         } catch (error: any) {
-            console.error('Error checking session:', error);
+            logger.error('Error checking session:', error);
             if (error?.message?.includes('JWT') || error?.code === 'PGRST301') {
                 clearAuth();
             }
@@ -203,8 +204,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         checkSession();
-        // Poll for session changes more frequently (every 5 seconds)
-        const interval = setInterval(checkSession, 5000);
+        // Poll for session changes conservatively (every 60 seconds)
+        const interval = setInterval(checkSession, 60000);
 
         return () => {
             clearInterval(interval);
@@ -215,7 +216,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             await insforge.auth.signOut();
         } catch (err) {
-            console.error('SignOut error:', err);
+            logger.error('SignOut error:', err);
         }
 
         clearAuth();
