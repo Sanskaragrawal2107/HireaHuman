@@ -84,6 +84,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (activeSession?.user && activeSession?.accessToken) {
                 const newUser = activeSession.user;
                 const newToken = activeSession.accessToken;
+                // @ts-ignore - refreshToken may not be in SDK types but exists in runtime
+                const newRefreshToken = activeSession.refreshToken;
 
                 // Validate token is not expired
                 if (isTokenExpired(newToken)) {
@@ -98,7 +100,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     sessionStorage.removeItem('hireahuman_logged_out');
                 }
 
-                const newSession = { user: newUser, accessToken: newToken };
+                const newSession = { 
+                    user: newUser, 
+                    accessToken: newToken,
+                    refreshToken: newRefreshToken
+                };
                 setSession(newSession);
                 localStorage.setItem('hireahuman_manual_session', JSON.stringify(newSession));
 
@@ -115,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const stored = localStorage.getItem('hireahuman_manual_session');
             if (stored && !user) {
                 try {
-                    const { user: storedUser, accessToken: storedToken } = JSON.parse(stored);
+                    const { user: storedUser, accessToken: storedToken, refreshToken: storedRefreshToken } = JSON.parse(stored);
 
                     // Validate token is not expired before using it
                     if (storedToken && isTokenExpired(storedToken)) {
@@ -135,7 +141,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             // @ts-ignore
                             insforge.auth.tokenManager.setAccessToken(storedToken);
                             // @ts-ignore
-                            insforge.auth.tokenManager.saveSession({ user: storedUser, accessToken: storedToken });
+                            if (storedRefreshToken) {
+                                // @ts-ignore
+                                insforge.auth.tokenManager.setRefreshToken(storedRefreshToken);
+                            }
+                            // @ts-ignore
+                            insforge.auth.tokenManager.saveSession({ 
+                                user: storedUser, 
+                                accessToken: storedToken,
+                                refreshToken: storedRefreshToken
+                            });
                         }
                         // @ts-ignore
                         if (insforge.http) {
@@ -145,7 +160,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                         // Optimistically set state
                         setUser(storedUser);
-                        setSession({ user: storedUser, accessToken: storedToken });
+                        setSession({ 
+                            user: storedUser, 
+                            accessToken: storedToken,
+                            refreshToken: storedRefreshToken
+                        });
                     }
                 } catch (e) {
                     logger.error('Failed to parse or validate stored session:', e);
@@ -176,10 +195,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // Attempt to get session token
                 // @ts-ignore
                 const currentToken = insforge.auth.tokenManager?.getAccessToken();
+                // @ts-ignore
+                const currentRefreshToken = insforge.auth.tokenManager?.getRefreshToken();
 
                 const newSession = {
                     user: newUser,
-                    accessToken: currentToken || (session?.accessToken)
+                    accessToken: currentToken || (session?.accessToken),
+                    refreshToken: currentRefreshToken || (session?.refreshToken)
                 };
 
                 setSession(newSession);
