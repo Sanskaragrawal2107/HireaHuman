@@ -82,12 +82,9 @@ export const AdminPage = () => {
 
             logger.info("Checking admin status with token:", accessToken.substring(0, 20) + "...");
 
-            // After login, verify admin status server-side with explicit headers
+            // After login, verify admin status server-side
             const { data: adminData, error: adminError } = await insforge.functions.invoke('check-admin', {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
             });
 
             logger.info("Admin check response:", { adminData, adminError });
@@ -100,7 +97,16 @@ export const AdminPage = () => {
             if (!adminData?.isAdmin) {
                 const currentUserId = loginData?.user?.id || sessionData?.session?.user?.id;
                 await insforge.auth.signOut();
-                throw new Error(`Unauthorized access. Admin privileges required.\n\nYour user ID: ${currentUserId || 'unknown'}\nAdmin check returned: ${JSON.stringify(adminData)}`);
+                
+                // Show detailed error from edge function
+                const errorDetails = [
+                    `Unauthorized access. Admin privileges required.`,
+                    `Your user ID: ${currentUserId || adminData?.userId || 'unknown'}`,
+                    adminData?.reason ? `Reason: ${adminData.reason}` : '',
+                    adminData?.error ? `Error: ${adminData.error}` : ''
+                ].filter(Boolean).join('\n');
+                
+                throw new Error(errorDetails);
             }
 
             setIsAuthenticated(true);
