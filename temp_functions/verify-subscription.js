@@ -1,7 +1,7 @@
 ﻿import { createClient } from "npm:@insforge/sdk";
 
-const PAYU_KEY = Deno.env.get("PAYU_KEY") || "gtKFFx";
-const PAYU_SALT = Deno.env.get("PAYU_SALT") || "4R38IvwiV57FwVpsgOvTXBdLE4tHUXFW";
+const PAYU_KEY = Deno.env.get("PAYU_KEY") || "eI5LXm";
+const PAYU_SALT = Deno.env.get("PAYU_SALT") || "x4khTkYlorltBXGTWRmzkSWQsYFfStpc";
 const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://test.payu.in";
 
 export default async function (req) {
