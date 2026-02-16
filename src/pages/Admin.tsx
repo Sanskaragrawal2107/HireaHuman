@@ -69,18 +69,38 @@ export const AdminPage = () => {
 
             if (error) throw error;
 
-            // Get current user ID to show in error if needed
-            const { data: userData } = await insforge.auth.getCurrentUser();
-            const currentUserId = userData?.user?.id || loginData?.user?.id;
+            // Wait for session to be established
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-            // After login, verify admin status server-side
+            // Verify session is active and get token
+            const { data: sessionData } = await insforge.auth.getCurrentSession();
+            const accessToken = sessionData?.session?.accessToken;
+            
+            if (!accessToken) {
+                throw new Error("Session not established after login");
+            }
+
+            logger.info("Checking admin status with token:", accessToken.substring(0, 20) + "...");
+
+            // After login, verify admin status server-side with explicit headers
             const { data: adminData, error: adminError } = await insforge.functions.invoke('check-admin', {
                 method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
             });
 
-            if (adminError || !adminData?.isAdmin) {
+            logger.info("Admin check response:", { adminData, adminError });
+
+            if (adminError) {
+                logger.error("Admin check error:", adminError);
+                throw new Error(`Admin check failed: ${adminError.message || 'Unknown error'}`);
+            }
+
+            if (!adminData?.isAdmin) {
+                const currentUserId = loginData?.user?.id || sessionData?.session?.user?.id;
                 await insforge.auth.signOut();
-                throw new Error(`Unauthorized access. Admin privileges required.\n\nYour user ID: ${currentUserId || 'unknown'}\nContact support to add this ID to admin_users table.`);
+                throw new Error(`Unauthorized access. Admin privileges required.\n\nYour user ID: ${currentUserId || 'unknown'}\nAdmin check returned: ${JSON.stringify(adminData)}`);
             }
 
             setIsAuthenticated(true);
