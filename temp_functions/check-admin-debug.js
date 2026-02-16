@@ -1,5 +1,18 @@
 import { createClient } from 'npm:@insforge/sdk';
 
+// Helper to decode JWT and extract user ID
+function getUserIdFromToken(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload.sub || payload.user_id || null;
+  } catch (err) {
+    console.error('[check-admin] Token decode error:', err);
+    return null;
+  }
+}
+
 export default async function(req) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -26,39 +39,30 @@ export default async function(req) {
       });
     }
 
-    const client = createClient({
-      baseUrl: Deno.env.get('INSFORGE_BASE_URL'),
-      edgeFunctionToken: userToken,
-    });
-
-    console.log('[check-admin] Getting current user...');
-    const { data: userData, error: userError } = await client.auth.getCurrentUser();
+    // Decode JWT token to get user ID
+    const userId = getUserIdFromToken(userToken);
     
-    if (userError) {
-      console.error('[check-admin] getCurrentUser error:', userError);
+    if (!userId) {
+      console.log('[check-admin] Could not extract user ID from token');
       return new Response(JSON.stringify({ 
         isAdmin: false, 
-        reason: 'User auth failed',
-        error: userError.message 
+        reason: 'Invalid token format'
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (!userData?.user?.id) {
-      console.log('[check-admin] No user data returned');
-      return new Response(JSON.stringify({ isAdmin: false, reason: 'No user data' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    console.log('[check-admin] User ID from token:', userId);
 
-    const userId = userData.user.id;
-    console.log('[check-admin] User ID:', userId);
+    // Use user token for authenticated database access (RLS needs auth context)
+    const client = createClient({
+      baseUrl: Deno.env.get('INSFORGE_BASE_URL'),
+      edgeFunctionToken: userToken
+    });
 
-    // Check admin_users table (RLS will scope to own user_id only)
-    console.log('[check-admin] Querying admin_users table...');
+    // Check admin_users table (RLS policy allows user to see their own row)
+    console.log('[check-admin] Querying admin_users table for user_id:', userId);
     const { data: adminRecord, error: dbError } = await client.database
       .from('admin_users')
       .select('role')
