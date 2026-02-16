@@ -62,12 +62,16 @@ export const AdminPage = () => {
         setLoginError('');
 
         try {
-            const { error } = await insforge.auth.signInWithPassword({
+            const { data: loginData, error } = await insforge.auth.signInWithPassword({
                 email,
                 password
             });
 
             if (error) throw error;
+
+            // Get current user ID to show in error if needed
+            const { data: userData } = await insforge.auth.getCurrentUser();
+            const currentUserId = userData?.user?.id || loginData?.user?.id;
 
             // After login, verify admin status server-side
             const { data: adminData, error: adminError } = await insforge.functions.invoke('check-admin', {
@@ -76,7 +80,7 @@ export const AdminPage = () => {
 
             if (adminError || !adminData?.isAdmin) {
                 await insforge.auth.signOut();
-                throw new Error("Unauthorized access. Admin privileges required.");
+                throw new Error(`Unauthorized access. Admin privileges required.\n\nYour user ID: ${currentUserId || 'unknown'}\nContact support to add this ID to admin_users table.`);
             }
 
             setIsAuthenticated(true);
