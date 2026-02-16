@@ -29,10 +29,21 @@ export const VerifyCompanyPage = () => {
         linkedinUrl: '',
         businessId: ''
     });
+    const [companyId, setCompanyId] = useState<string | null>(null);
 
+    // ── Initial Auth Check + Razorpay Script ──
+    useEffect(() => {
+        // Load Razorpay Script
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
 
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
 
-    // ── Initial Auth Check ──
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -47,7 +58,22 @@ export const VerifyCompanyPage = () => {
                         .eq('user_id', data.user.id)
                         .single();
                     if (company) {
-                        navigate('/recruiter-dashboard');
+                        // Only redirect to dashboard if payment was completed
+                        if (company.subscription_status === 'paid' || company.subscription_status === 'active') {
+                            navigate('/recruiter-dashboard');
+                            return;
+                        }
+                        // Company exists but payment not done - resume payment step
+                        setCompanyId(company.id);
+                        setCompanyData({
+                            workEmail: company.email || '',
+                            companyName: company.name || '',
+                            websiteUrl: company.website || '',
+                            linkedinUrl: company.linkedin || '',
+                            businessId: company.business_id || ''
+                        });
+                        setStep('payment');
+                        setPageLoading(false);
                         return;
                     }
                     setStep('company-form');
@@ -126,7 +152,21 @@ export const VerifyCompanyPage = () => {
                     .eq('user_id', data.user.id)
                     .single();
                 if (company) {
-                    navigate('/recruiter-dashboard');
+                    // Only redirect if payment is completed
+                    if (company.subscription_status === 'paid' || company.subscription_status === 'active') {
+                        navigate('/recruiter-dashboard');
+                    } else {
+                        // Resume payment step
+                        setCompanyId(company.id);
+                        setCompanyData({
+                            workEmail: company.email || '',
+                            companyName: company.name || '',
+                            websiteUrl: company.website || '',
+                            linkedinUrl: company.linkedin || '',
+                            businessId: company.business_id || ''
+                        });
+                        setStep('payment');
+                    }
                 } else {
                     setStep('company-form');
                 }
@@ -198,7 +238,7 @@ export const VerifyCompanyPage = () => {
 
         setLoading(true);
         try {
-            const { error: insertError } = await insforge.database.from('companies').insert({
+            const { data: insertedCompany, error: insertError } = await insforge.database.from('companies').insert({
                 user_id: user.id,
                 name: companyData.companyName,
                 email: companyData.workEmail,
@@ -206,11 +246,15 @@ export const VerifyCompanyPage = () => {
                 linkedin: companyData.linkedinUrl,
                 business_id: companyData.businessId,
                 status: 'pending',
+                subscription_status: 'unpaid',
                 description: '',
                 tech_stack: []
-            });
+            }).select('id').single();
 
             if (insertError) throw insertError;
+            if (insertedCompany?.id) {
+                setCompanyId(insertedCompany.id);
+            }
             setStep('payment');
         } catch (err: any) {
             console.error("Company insert error:", err);
@@ -220,25 +264,70 @@ export const VerifyCompanyPage = () => {
         }
     };
 
-    // ── Payment Handler (records deposit) ──
+    // ── Payment Handler ──
     const handlePayment = async () => {
+        if (!user || !companyId) {
+            setError('Company information missing. Please go back and resubmit.');
+            return;
+        }
         setLoading(true);
         setError('');
-
         try {
-            // 1. Get company ID for this user
-            const { data: company, error: companyError } = await insforge.database
-                .from('companies')
-                .select('id')
-                .eq('user_id', user.id)
-                .single();
+            // 1. Create Payment Order via Edge Function
+            // @ts-ignore
+            const { data, error } = await insforge.functions.invoke('create-company-payment', {
+                body: { user_id: user.id, company_id: companyId, email: user.email }
+            });
 
-            if (companyError || !company) throw new Error('Company not found. Please go back and re-submit.');
+            if (error) throw error;
+            const { order_id, key_id, amount, email } = data;
 
-            setStep('success');
+            // 2. Open Razorpay Checkout
+            const options = {
+                key: key_id,
+                amount: amount,
+                currency: "INR",
+                order_id: order_id,
+                name: "HireAHuman Company Verification",
+                description: "Security Deposit for Company Verification",
+                handler: async function (response: any) {
+                    // 3. Verify Payment via Edge Function
+                    // @ts-ignore
+                    const { data: verifyData, error: verifyError } = await insforge.functions.invoke('verify-company-payment', {
+                        body: {
+                            payment_id: response.razorpay_payment_id,
+                            order_id: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            user_id: user.id,
+                            company_id: companyId
+                        }
+                    });
+
+                    if (verifyError || !verifyData?.success) {
+                        alert("Payment verification failed. Please contact support.");
+                        setError("Payment verification failed. Please try again.");
+                    } else {
+                        // Success! Move to success screen
+                        setStep('success');
+                    }
+                },
+                prefill: {
+                    name: companyData.companyName,
+                    email: email,
+                    contact: ""
+                },
+                theme: {
+                    color: "#0f172a"
+                }
+            };
+
+            // @ts-ignore
+            const rzp1 = new window.Razorpay(options);
+            rzp1.open();
+
         } catch (err: any) {
-            console.error('Payment error:', err);
-            setError(err.message || 'Failed to process payment. Please try again.');
+            console.error("Payment error:", err);
+            setError(err.message || 'Failed to initiate payment. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -533,6 +622,7 @@ export const VerifyCompanyPage = () => {
                                         <button
                                             onClick={async () => {
                                                 await insforge.auth.signOut();
+                                                localStorage.removeItem('hireahuman_manual_session');
                                                 setUser(null);
                                                 setStep('login');
                                             }}
@@ -718,15 +808,12 @@ export const VerifyCompanyPage = () => {
                                 </button>
 
                                 <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-                                    <Lock className="w-3 h-3" /> Secure payment via Stripe
+                                    <Lock className="w-3 h-3" /> Secure payment via Razorpay
                                 </div>
 
-                                <button
-                                    onClick={() => setStep('company-form')}
-                                    className="w-full text-center text-sm text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-center gap-1 mt-4"
-                                >
-                                    <ArrowLeft className="w-3 h-3" /> Back to details
-                                </button>
+                                <p className="text-center text-xs text-slate-400 mt-4">
+                                    Payment is required to complete verification. Your deposit is refundable.
+                                </p>
                             </div>
                         )}
 
@@ -765,6 +852,31 @@ export const VerifyCompanyPage = () => {
                             </div>
                         )}
 
+                    </div>
+                </div>
+
+                {/* FAQ SECTION for SEO */}
+                <div className="mt-12 max-w-2xl mx-auto">
+                    <h2 className="text-xl font-bold text-slate-900 mb-6 text-center">Frequently Asked Questions</h2>
+                    <div className="space-y-4">
+                        <div className="bg-white/50 backdrop-blur border border-slate-200 rounded-xl p-4">
+                            <h3 className="font-semibold text-slate-900 text-sm mb-2">What is the best website for hiring humans with tech skills?</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                                HireAHuman specializes in hiring engineers verified through GitHub. Unlike generic freelance hiring platforms, we verify actual code.
+                            </p>
+                        </div>
+                        <div className="bg-white/50 backdrop-blur border border-slate-200 rounded-xl p-4">
+                            <h3 className="font-semibold text-slate-900 text-sm mb-2">How is this different from other freelance hiring platforms?</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                                Traditional websites where you can hire people rely on self-reported skills. We use AI to analyze code quality, giving you "Proof of Work" before you interview.
+                            </p>
+                        </div>
+                        <div className="bg-white/50 backdrop-blur border border-slate-200 rounded-xl p-4">
+                            <h3 className="font-semibold text-slate-900 text-sm mb-2">Can I hire people for jobs both freelance and full-time?</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                                Yes! Engineers on our platform are available for contract (freelance) or full-time permanent positions.
+                            </p>
+                        </div>
                     </div>
                 </div>
 

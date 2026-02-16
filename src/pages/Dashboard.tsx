@@ -4,8 +4,11 @@ import { Shield, Loader, Upload, User, Code, MapPin, Briefcase, FileText, Github
 import { insforge } from '../lib/insforge';
 import { useNavigate, Link } from 'react-router-dom';
 
+import { useAuth } from '../context/AuthContext';
+
 export const DashboardPage = () => {
     const navigate = useNavigate();
+    const { user: authUser, loading: authLoading } = useAuth(); // Get user from context
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
@@ -16,24 +19,35 @@ export const DashboardPage = () => {
     const [monthlyViews, setMonthlyViews] = useState(0);
 
     useEffect(() => {
-        loadDashboard();
-    }, []);
-
-    const loadDashboard = async () => {
-        try {
-            // @ts-ignore
-            const { data: { user } } = await insforge.auth.getCurrentUser();
-            if (!user) {
+        if (!authLoading) {
+            if (!authUser) {
                 navigate('/join');
-                return;
+            } else {
+                setUser(authUser);
+                loadDashboard(authUser);
             }
-            setUser(user);
+        }
+
+        // Load Razorpay Script
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, [authUser, authLoading, navigate]);
+
+    const loadDashboard = async (currentUser: any) => {
+        try {
+            // No need to fetch user again
 
             // @ts-ignore
             const { data: profileData } = await insforge.database
                 .from('profiles')
                 .select('*')
-                .eq('id', user.id)
+                .eq('id', currentUser.id)
                 .maybeSingle();
 
             if (!profileData) {
@@ -126,8 +140,18 @@ export const DashboardPage = () => {
     };
 
     const handleLogout = async () => {
-        await insforge.auth.signOut();
-        navigate('/');
+        try {
+            // Clear authentication and local storage
+            await insforge.auth.signOut();
+            localStorage.removeItem('hireahuman_manual_session');
+            
+            // Force a full page reload to clear all state
+            window.location.href = '/';
+        } catch (err) {
+            console.error('Logout error:', err);
+            // Still redirect even if signOut fails
+            window.location.href = '/';
+        }
     };
 
     // Profile completeness
@@ -138,6 +162,67 @@ export const DashboardPage = () => {
         const hasSkills = profile.skills && profile.skills.length > 0 ? 1 : 0;
         const hasExp = profile.experience_history && profile.experience_history.length > 0 ? 1 : 0;
         return Math.round(((filled + hasSkills + hasExp) / (fields.length + 2)) * 100);
+    };
+
+    const handleSubscribe = async () => {
+        if (!user || !profile) return;
+        setUpdating(true);
+        try {
+            // 1. Create Subscription via Edge Function
+            // @ts-ignore
+            const { data, error } = await insforge.functions.invoke('create-subscription', {
+                body: { user_id: user.id, email: user.email }
+            });
+
+            if (error) throw error;
+            const { subscription_id, key_id } = data;
+
+            // 2. Open Razorpay Checkout
+            const options = {
+                key: key_id,
+                subscription_id: subscription_id,
+                name: "HireAHuman BlueTech",
+                description: "Monthly Membership for Verified Badge",
+                handler: async function (response: any) {
+                    // 3. Verify Payment via Edge Function
+                    // @ts-ignore
+                    const { data: verifyData, error: verifyError } = await insforge.functions.invoke('verify-subscription', {
+                        body: {
+                            payment_id: response.razorpay_payment_id,
+                            subscription_id: response.razorpay_subscription_id,
+                            signature: response.razorpay_signature,
+                            user_id: user.id
+                        }
+                    });
+
+                    if (verifyError || !verifyData?.success) {
+                        alert("Verification failed. Please contact support.");
+                    } else {
+                        // Success! Update local state
+                        setProfile({ ...profile, bluetech_badge: true, bluetech_subscription_status: 'active' });
+                        alert("Membership active! You now have the BlueTech Badge.");
+                    }
+                },
+                prefill: {
+                    name: profile.display_name,
+                    email: user.email,
+                    contact: "" // accurate phone can be passed if available
+                },
+                theme: {
+                    color: "#06b6d4"
+                }
+            };
+
+            // @ts-ignore
+            const rzp1 = new window.Razorpay(options);
+            rzp1.open();
+
+        } catch (err: any) {
+            console.error("Subscription error:", err);
+            alert("Failed to start subscription: " + err.message);
+        } finally {
+            setUpdating(false);
+        }
     };
 
     const completeness = calculateCompleteness();
@@ -404,7 +489,12 @@ export const DashboardPage = () => {
                                         <Linkedin className="w-4 h-4" /> LinkedIn
                                     </a>
                                 )}
-                                {!profile?.github_url && !profile?.linkedin_url && (
+                                {profile?.leetcode_url && (
+                                    <a href={profile.leetcode_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors">
+                                        <Code className="w-4 h-4" /> LeetCode
+                                    </a>
+                                )}
+                                {!profile?.github_url && !profile?.linkedin_url && !profile?.leetcode_url && (
                                     <p className="text-zinc-600 text-xs font-mono">No links added.</p>
                                 )}
                             </div>
@@ -419,9 +509,12 @@ export const DashboardPage = () => {
                                 </div>
                             ) : (
                                 <div>
-                                    <p className="text-zinc-600 text-xs font-mono mb-3">₹800/month for priority ranking and badge.</p>
-                                    <button className="w-full py-2 border border-blue-500/30 text-blue-400 text-xs font-bold font-mono uppercase hover:bg-blue-500/10 transition-all rounded">
-                                        Subscribe
+                                    <p className="text-zinc-600 text-xs font-mono mb-3">₹199/month for priority ranking and badge.</p>
+                                    <button
+                                        onClick={handleSubscribe}
+                                        disabled={updating}
+                                        className="w-full py-2 border border-blue-500/30 text-blue-400 text-xs font-bold font-mono uppercase hover:bg-blue-500/10 transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {updating ? <Loader className="w-4 h-4 animate-spin mx-auto" /> : 'Subscribe'}
                                     </button>
                                 </div>
                             )}
@@ -473,6 +566,7 @@ export const DashboardPage = () => {
                                     {profile.preferred_location && <span className="flex items-center gap-1 text-indigo-600"><Globe className="w-3 h-3" />Preferred: {profile.preferred_location}</span>}
                                     {profile.github_url && <a href={profile.github_url} className="flex items-center gap-1 text-blue-600 hover:underline"><Github className="w-3 h-3" />GitHub</a>}
                                     {profile.linkedin_url && <a href={profile.linkedin_url} className="flex items-center gap-1 text-blue-600 hover:underline"><Linkedin className="w-3 h-3" />LinkedIn</a>}
+                                    {profile.leetcode_url && <a href={profile.leetcode_url} className="flex items-center gap-1 text-blue-600 hover:underline"><Code className="w-3 h-3" />LeetCode</a>}
                                 </div>
                             </div>
 

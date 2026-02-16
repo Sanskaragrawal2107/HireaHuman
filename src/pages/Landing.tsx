@@ -153,20 +153,32 @@ export const LandingPage = () => {
 
                 {/* Real-Time Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-24 border-t border-zinc-800/50 pt-12 w-full max-w-6xl bg-black/20 backdrop-blur-sm p-8 rounded-2xl border border-zinc-800/30">
-                    <StatBox number={stats.totalProfiles.toLocaleString()} label="Engineers Indexed" color="text-white" />
+                    <StatBox number={stats.totalProfiles.toLocaleString()} label="Engineers Verified" color="text-white" />
                     <StatBox number={stats.verifiedCompanies.toLocaleString()} label="Verified Companies" color="text-cyan-500" />
                     <StatBox number={stats.availableEngineers.toLocaleString()} label="Available Now" color="text-green-500" isLive />
                     <StatBox number="$145k" label="Avg Salary" color="text-blue-500" />
                 </div>
             </section>
 
+            {/* SEO FOCUS SECTION */}
+            <section className="bg-zinc-950 border-t border-zinc-900 py-12 px-6">
+                <div className="max-w-4xl mx-auto text-center space-y-4">
+                    <h2 className="text-2xl font-bold text-white">The Modern Website for Hiring Humans</h2>
+                    <p className="text-zinc-500 max-w-2xl mx-auto text-sm leading-relaxed">
+                        Looking for a <Link to="/hire-humans" className="text-cyan-500 hover:underline">website for hiring humans</Link> with verified skills?
+                        HireAHuman is the only platform that uses GitHub commits—not resumes—to verify engineering talent.
+                        Unlike traditional <span className="text-white">freelance hiring platforms</span> where anyone can claim expertise, we analyze actual code contributions to surface the top 1% of builders.
+                    </p>
+                </div>
+            </section>
+
             {/* MARQUEE */}
             <section className="bg-black/80 backdrop-blur border-y border-zinc-800 py-6">
                 <ScrollMarquee items={TECH_STACK} speed={40} />
-            </section>
+            </section >
 
             {/* GITHUB SCANNING FEATURE - THE VERIFIER */}
-            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden">
+            < section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden" >
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-900/10 to-transparent pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row items-center gap-16 relative z-10">
@@ -258,10 +270,10 @@ export const LandingPage = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* AUTOMATIC SEARCH EXPLAINER - ZERO QUERY */}
-            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative">
+            < section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative" >
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <h2 className="text-4xl md:text-5xl font-black text-white mb-6 uppercase tracking-tight">
                         STOP SEARCHING.<br />
@@ -306,10 +318,10 @@ export const LandingPage = () => {
                         </p>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* FEATURES GRID */}
-            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative">
+            < section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative" >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
 
                     {/* RESUME LOCKED */}
@@ -372,11 +384,11 @@ export const LandingPage = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
 
             {/* MANIFESTO SECTION */}
-            <section className="py-32 px-6 text-center border-t border-zinc-900 bg-black relative">
+            < section className="py-32 px-6 text-center border-t border-zinc-900 bg-black relative" >
                 <div className="max-w-4xl mx-auto space-y-16 relative z-10">
 
                     <div className="space-y-6">
@@ -420,10 +432,10 @@ export const LandingPage = () => {
                     </div>
 
                 </div>
-            </section>
+            </section >
 
             {/* SELECTION CTA */}
-            <section className="py-24 px-6 md:px-12 border-t border-zinc-900 bg-zinc-950">
+            < section className="py-24 px-6 md:px-12 border-t border-zinc-900 bg-zinc-950" >
                 <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12">
 
                     <div className="relative group p-8 border border-zinc-800 bg-black hover:border-white/20 transition-all rounded-xl overflow-hidden">
@@ -431,7 +443,7 @@ export const LandingPage = () => {
                         <h3 className="text-3xl font-bold text-white mb-6">FOR ENGINEERS</h3>
                         <div className="space-y-4 text-zinc-400 mb-8 font-mono text-sm">
                             <p>Stop applying everywhere.</p>
-                            <p>Build once. Stay real. Stay indexed.</p>
+                            <p>Build once. Stay real. Stay verified.</p>
                             <p className="text-white">Let AI find you.</p>
                         </div>
                         <Link to="/join" className="inline-block w-full py-4 bg-white text-black font-bold text-center hover:bg-zinc-200 transition-colors uppercase tracking-widest text-sm">
@@ -453,10 +465,10 @@ export const LandingPage = () => {
                     </div>
 
                 </div>
-            </section>
+            </section >
 
             {/* FINAL LINE */}
-            <footer className="py-32 bg-black text-center relative overflow-hidden">
+            < footer className="py-32 bg-black text-center relative overflow-hidden" >
                 <div className="relative z-10">
                     <h2 className="text-5xl md:text-7xl font-bold text-white tracking-tighter mb-8">
                         ROBOTS DON'T NETWORK.
@@ -469,8 +481,8 @@ export const LandingPage = () => {
                         HireAHuman.ai // The Professional Layer for AI Hiring
                     </div>
                 </div>
-            </footer>
-        </div>
+            </footer >
+        </div >
     );
 };
 

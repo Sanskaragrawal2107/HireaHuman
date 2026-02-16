@@ -1,11 +1,11 @@
 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { LandingPage } from './pages/Landing';
 import { DocsPage } from './pages/Docs';
 import { ProfilePage } from './pages/Profile';
 import { DashboardPage } from './pages/Dashboard';
-import { BrowsePage } from './pages/Browse'; // Assuming this exists based on list_dir
+import { BrowsePage } from './pages/Browse';
 import { JoinPage } from './pages/Join';
 import { VerifyCompanyPage } from './pages/VerifyCompany';
 import { RecruiterDashboard } from './pages/RecruiterDashboard';
@@ -14,111 +14,74 @@ import { NotFoundPage } from './pages/NotFound';
 import { BlogPage } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
 import { VsRentAHuman } from './pages/VsRentAHuman';
+import { HireHumansPage } from './pages/HireHumans';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <Layout>
-        <LandingPage />
+        <Outlet />
       </Layout>
-    )
-  },
-  {
-    path: "/browse",
-    element: (
-      <Layout>
-        <BrowsePage />
-      </Layout>
-    )
-  },
-  {
-    path: "/join",
-    element: (
-      <Layout>
-        <JoinPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/login",
-    element: (
-      <Layout>
-        <JoinPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/docs",
-    element: (
-      <Layout>
-        <DocsPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/profile",
-    element: (
-      <Layout>
-        <ProfilePage />
-      </Layout>
-    )
-  },
-  {
-    path: "/dashboard",
-    element: (
-      <Layout>
-        <DashboardPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/verify",
-    element: (
-      <Layout>
-        <VerifyCompanyPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/recruiter-dashboard",
-    element: (
-      <Layout>
-        <RecruiterDashboard />
-      </Layout>
-    )
-  },
-  {
-    path: "/admin",
-    element: (
-      <Layout>
-        <AdminPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/blog",
-    element: (
-      <Layout>
-        <BlogPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/blog/:slug",
-    element: (
-      <Layout>
-        <BlogPostPage />
-      </Layout>
-    )
-  },
-  {
-    path: "/vs/rentahuman",
-    element: (
-      <Layout>
-        <VsRentAHuman />
-      </Layout>
-    )
+    ),
+    children: [
+      {
+        index: true,
+        element: <LandingPage />
+      },
+      {
+        path: "browse",
+        element: <BrowsePage />
+      },
+      {
+        path: "join",
+        element: <JoinPage />
+      },
+      {
+        path: "login",
+        element: <JoinPage />
+      },
+      {
+        path: "docs",
+        element: <DocsPage />
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />
+      },
+      {
+        path: "dashboard",
+        element: <DashboardPage />
+      },
+      {
+        path: "verify",
+        element: <VerifyCompanyPage />
+      },
+      {
+        path: "recruiter-dashboard",
+        element: <RecruiterDashboard />
+      },
+      {
+        path: "admin",
+        element: <AdminPage />
+      },
+      {
+        path: "blog",
+        element: <BlogPage />
+      },
+      {
+        path: "blog/:slug",
+        element: <BlogPostPage />
+      },
+      {
+        path: "hire-humans",
+        element: <HireHumansPage />
+      },
+      {
+        path: "vs/rentahuman",
+        element: <VsRentAHuman />
+      }
+    ]
   },
   {
     path: "*",

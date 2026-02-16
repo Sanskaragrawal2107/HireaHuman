@@ -38,7 +38,7 @@ export const BrowsePage = () => {
         fetchProfiles();
     }, []);
 
-    async function fetchProfiles() {
+    async function fetchProfiles(retryCount = 0) {
         try {
             // @ts-ignore
             const { data, error } = await insforge.database
@@ -47,7 +47,33 @@ export const BrowsePage = () => {
                 .order('bluetech_badge', { ascending: false })
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                // Handle JWT expiration error
+                if ((error.code === 'PGRST301' || error.message?.includes('JWT')) && retryCount === 0) {
+                    console.warn('JWT expired, clearing stored session and retrying with anonKey...');
+                    
+                    // Clear expired token from storage
+                    localStorage.removeItem('hireahuman_manual_session');
+                    sessionStorage.removeItem('hireahuman_logged_out');
+                    
+                    // Clear from SDK token manager
+                    // @ts-ignore
+                    if (insforge.auth?.tokenManager) {
+                        // @ts-ignore
+                        insforge.auth.tokenManager.clearSession();
+                    }
+                    // @ts-ignore
+                    if (insforge.http) {
+                        // @ts-ignore
+                        insforge.http.setAuthToken(null);
+                    }
+                    
+                    // Retry once with clean state (will use anonKey)
+                    await fetchProfiles(1);
+                    return;
+                }
+                throw error;
+            }
             if (data) setProfiles(data);
         } catch (err) {
             console.error("Error fetching profiles:", err);

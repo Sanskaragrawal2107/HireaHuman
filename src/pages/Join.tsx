@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { insforge } from '../lib/insforge';
+import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, Terminal, Cpu, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,9 +20,18 @@ export const JoinPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const isLogin = location.pathname === '/login';
+    const { user, loading: authLoading, refreshSession } = useAuth();
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate('/profile');
+        }
+    }, [user, authLoading, navigate]);
 
     const handleGoogleLogin = async () => {
         setLoading(true);
+        // Clear logout flag so AuthContext picks up the new OAuth session after redirect
+        sessionStorage.removeItem('hireahuman_logged_out');
         const { error } = await insforge.auth.signInWithOAuth({
             provider: 'google',
             redirectTo: `${window.location.origin}/profile`
@@ -34,7 +44,7 @@ export const JoinPage = () => {
         e.preventDefault();
         setError('');
         setLoading(true);
-        
+
         try {
             if (isLogin) {
                 // Login with password
@@ -42,7 +52,7 @@ export const JoinPage = () => {
                     email,
                     password
                 });
-                
+
                 if (error) {
                     // Handle specific login errors
                     if (error.message?.includes('Email not confirmed')) {
@@ -55,10 +65,11 @@ export const JoinPage = () => {
                     }
                     throw error;
                 }
-                
+
                 if (data?.user) {
                     // Successfully logged in
-                    navigate('/profile');
+                    await refreshSession(); // Update global auth state immediately
+                    // Navigation handled by useEffect
                 }
             } else {
                 // Sign up with password
@@ -72,12 +83,12 @@ export const JoinPage = () => {
                     setLoading(false);
                     return;
                 }
-                
+
                 const { data, error } = await insforge.auth.signUp({
                     email,
                     password
                 });
-                
+
                 if (error) {
                     // Handle specific signup errors
                     if (error.message?.includes('User already registered')) {
@@ -89,14 +100,15 @@ export const JoinPage = () => {
                     }
                     throw error;
                 }
-                
+
                 // Check if email verification is required
                 if (data?.requireEmailVerification) {
                     setNeedsEmailVerification(true);
                     setError('Account created! Please check your email to verify your account.');
                 } else if (data?.user) {
                     // Successfully signed up and logged in
-                    navigate('/profile');
+                    await refreshSession();
+                    // Navigation handled by useEffect
                 }
             }
         } catch (error: any) {
@@ -133,17 +145,17 @@ export const JoinPage = () => {
             setError('Please enter a valid 6-digit code');
             return;
         }
-        
+
         setError('');
         setVerifyingOtp(true);
-        
+
         try {
             // @ts-ignore
             const { data, error } = await insforge.auth.verifyEmail({
                 email,
                 otp: otp
             });
-            
+
             if (error) {
                 if (error.message?.includes('Invalid') || error.message?.includes('expired')) {
                     setError('Invalid or expired code. Please check the code or request a new one.');
@@ -152,7 +164,7 @@ export const JoinPage = () => {
                 }
                 throw error;
             }
-            
+
             if (data) {
                 // Email verified successfully, now redirect to login
                 setError('Email verified successfully! You can now login.');
@@ -223,17 +235,16 @@ export const JoinPage = () => {
 
                     {/* Error Message */}
                     {error && (
-                        <div className={`p-4 rounded border ${
-                            error.includes('created') || error.includes('verify your email') 
-                                ? 'bg-green-500/5 border-green-500/20 text-green-400' 
-                                : error.includes('already exists') || error.includes('already registered')
+                        <div className={`p-4 rounded border ${error.includes('created') || error.includes('verify your email')
+                            ? 'bg-green-500/5 border-green-500/20 text-green-400'
+                            : error.includes('already exists') || error.includes('already registered')
                                 ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-400'
                                 : 'bg-red-500/5 border-red-500/20 text-red-400'
-                        }`}>
+                            }`}>
                             <p className="text-xs font-mono">{error}</p>
                             {error.includes('already exists') && (
-                                <Link 
-                                    to="/login" 
+                                <Link
+                                    to="/login"
                                     className="text-cyan-400 hover:text-white underline text-xs font-mono mt-2 inline-block"
                                 >
                                     → Go to Login
@@ -251,7 +262,7 @@ export const JoinPage = () => {
                                 <p className="text-white font-mono text-xs mb-3">{email}</p>
                                 <p className="text-zinc-500 text-[10px] font-mono">Enter the code below to activate your account.</p>
                             </div>
-                            
+
                             <form onSubmit={handleVerifyOtp} className="space-y-4">
                                 <div className="space-y-2">
                                     <label htmlFor="otp" className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Verification Code</label>
@@ -269,7 +280,7 @@ export const JoinPage = () => {
                                         className="w-full bg-zinc-950/50 border border-zinc-700 rounded-none py-3 px-4 text-white text-center text-2xl font-mono tracking-[0.5em] placeholder:text-zinc-700 placeholder:tracking-normal placeholder:text-base focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                                     />
                                 </div>
-                                
+
                                 <button
                                     type="submit"
                                     disabled={verifyingOtp || otp.length !== 6}
@@ -278,7 +289,7 @@ export const JoinPage = () => {
                                     {verifyingOtp ? 'VERIFYING...' : 'VERIFY_EMAIL'}
                                     {!verifyingOtp && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                 </button>
-                                
+
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -312,7 +323,7 @@ export const JoinPage = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Password fields - only show if not using magic link */}
                             {!useMagicLink && (
                                 <>
@@ -332,7 +343,7 @@ export const JoinPage = () => {
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     {/* Confirm Password - only for signup */}
                                     {!isLogin && (
                                         <div className="space-y-2">
@@ -354,7 +365,7 @@ export const JoinPage = () => {
                                     )}
                                 </>
                             )}
-                            
+
                             <button
                                 type="submit"
                                 disabled={loading}
@@ -363,7 +374,7 @@ export const JoinPage = () => {
                                 {loading ? 'PROCESSING...' : (useMagicLink ? 'SEND_MAGIC_LINK' : (isLogin ? 'LOGIN' : 'SIGN_UP'))}
                                 {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                             </button>
-                            
+
                             {/* Toggle for magic link */}
                             <button
                                 type="button"

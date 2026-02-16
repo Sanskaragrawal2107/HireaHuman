@@ -66,6 +66,7 @@ export const AdminPage = () => {
                 fetchCompanies();
             } else {
                 await insforge.auth.signOut();
+                localStorage.removeItem('hireahuman_manual_session');
                 throw new Error("Unauthorized access.");
             }
         } catch (err: any) {
@@ -220,7 +221,9 @@ export const AdminPage = () => {
                     <button
                         onClick={async () => {
                             await insforge.auth.signOut();
+                            localStorage.removeItem('hireahuman_manual_session');
                             setIsAuthenticated(false);
+                            window.location.href = '/';
                         }}
                         className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition-colors"
                     >

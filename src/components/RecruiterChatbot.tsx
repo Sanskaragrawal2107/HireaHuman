@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, createContext, useContext } from 'react';
-import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus, useTamboComponentState } from "@tambo-ai/react";
+import { useTambo, useTamboThreadInput, TamboProvider, useTamboStreamStatus, useTamboComponentState, useTamboThreadList } from "@tambo-ai/react";
 import { z } from "zod";
-import { X, Send, User, Bot, MapPin, Briefcase, Maximize2, Minimize2, Wrench, CheckCircle2, Mail, Loader2, UserCheck, UserX, Star, ChevronDown, BadgeCheck } from 'lucide-react';
+import { X, Send, User, Bot, MapPin, Briefcase, Maximize2, Minimize2, Wrench, CheckCircle2, Mail, Loader2, UserCheck, UserX, Star, ChevronDown, BadgeCheck, Plus, MessageSquare, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { insforge } from '../lib/insforge';
@@ -608,12 +608,80 @@ const CandidateList = ({ candidates, show_available = true, show_hired = true, h
     );
 };
 
+// ── Thread List Sidebar ───────────────────────────────────────────────
+
+const ThreadListSidebar = ({ onNewThread, onSelectThread, activeThreadId }: { onNewThread: () => void; onSelectThread: (threadId: string) => void; activeThreadId: string }) => {
+    const { data: threadListData, isLoading, refetch } = useTamboThreadList();
+
+    useEffect(() => {
+        refetch?.();
+    }, []);
+
+    const threadsList = threadListData?.threads ?? [];
+
+    return (
+        <div className="w-full h-full flex flex-col bg-zinc-950 border-r border-zinc-800">
+            <div className="p-3 border-b border-zinc-800 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Conversations</h3>
+                <button
+                    onClick={onNewThread}
+                    className="p-1.5 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 rounded-lg transition-colors"
+                    title="New conversation"
+                >
+                    <Plus className="w-3.5 h-3.5" />
+                </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+                {isLoading && (
+                    <div className="p-4 text-center">
+                        <Loader2 className="w-4 h-4 text-zinc-500 animate-spin mx-auto" />
+                    </div>
+                )}
+                {threadsList.length > 0 ? (
+                    <div className="space-y-0.5 p-1">
+                        {threadsList.map((thread: any) => (
+                            <button
+                                key={thread.id}
+                                onClick={() => onSelectThread(thread.id)}
+                                className={`w-full text-left p-3 rounded-lg transition-colors group ${
+                                    activeThreadId === thread.id
+                                        ? 'bg-cyan-500/10 border border-cyan-500/30'
+                                        : 'hover:bg-zinc-900 border border-transparent'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <MessageSquare className={`w-3 h-3 ${activeThreadId === thread.id ? 'text-cyan-400' : 'text-zinc-600'}`} />
+                                    <span className={`text-xs font-medium truncate ${activeThreadId === thread.id ? 'text-cyan-300' : 'text-zinc-400'}`}>
+                                        {thread.name || 'Conversation'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1 ml-5">
+                                    <Clock className="w-2.5 h-2.5 text-zinc-600" />
+                                    <span className="text-[10px] text-zinc-600">
+                                        {new Date(thread.createdAt || thread.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                ) : !isLoading ? (
+                    <div className="p-4 text-center">
+                        <MessageSquare className="w-6 h-6 text-zinc-700 mx-auto mb-2" />
+                        <p className="text-[10px] text-zinc-600">No conversations yet</p>
+                    </div>
+                ) : null}
+            </div>
+        </div>
+    );
+};
+
 // ── Chat Interface ────────────────────────────────────────────────────
 
 const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: () => void; isFullscreen: boolean; toggleFullscreen: () => void }) => {
-    const { messages } = useTambo();
+    const { messages, switchThread, startNewThread, currentThreadId } = useTambo();
     const { value, setValue, submit, isPending } = useTamboThreadInput();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [showThreads, setShowThreads] = useState(false);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -626,39 +694,74 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
         setValue('');
     };
 
+    const handleNewThread = () => {
+        // Start a fresh thread — Tambo generates a new placeholder ID
+        startNewThread();
+        setShowThreads(false);
+    };
+
+    const handleSelectThread = (threadId: string) => {
+        switchThread(threadId);
+        setShowThreads(false);
+    };
+
     return (
-        <div className="flex flex-col h-full bg-black text-white font-sans">
-            {/* Header */}
-            <div className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 bg-zinc-900/50 backdrop-blur">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-cyan-500/10 rounded-lg flex items-center justify-center">
-                        <Bot className="w-4 h-4 text-cyan-500" />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-sm">Talent Agent</h3>
-                        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                            ONLINE
+        <div className="flex h-full bg-black text-white font-sans">
+            {/* Thread sidebar - shown in fullscreen or when toggled */}
+            {(isFullscreen || showThreads) && (
+                <div className={`${isFullscreen ? 'w-64' : 'w-56'} shrink-0 h-full`}>
+                    <ThreadListSidebar onNewThread={handleNewThread} onSelectThread={handleSelectThread} activeThreadId={currentThreadId} />
+                </div>
+            )}
+
+            <div className="flex flex-col flex-1 min-w-0">
+                {/* Header */}
+                <div className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 bg-zinc-900/50 backdrop-blur shrink-0">
+                    <div className="flex items-center gap-2">
+                        {!isFullscreen && (
+                            <button
+                                onClick={() => setShowThreads(!showThreads)}
+                                className={`p-2 rounded-lg transition-colors ${showThreads ? 'bg-cyan-500/10 text-cyan-400' : 'hover:bg-zinc-800 text-zinc-400 hover:text-white'}`}
+                                title="Chat history"
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                            </button>
+                        )}
+                        <div className="w-8 h-8 bg-cyan-500/10 rounded-lg flex items-center justify-center">
+                            <Bot className="w-4 h-4 text-cyan-500" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-sm">Talent Agent</h3>
+                            <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                ONLINE
+                            </div>
                         </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleNewThread}
+                            className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                            title="New conversation"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={toggleFullscreen}
+                            className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                        >
+                            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                        </button>
+                        <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={toggleFullscreen}
-                        className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
-                        title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-                    >
-                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                    </button>
-                    <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors">
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-                {messages.length === 0 && (
+                {messages.filter((m) => m.role !== 'system').length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center opacity-50 space-y-4">
                         <Bot className="w-12 h-12 text-zinc-700" />
                         <div className="space-y-1">
@@ -668,7 +771,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                     </div>
                 )}
 
-                {messages.map((message) => (
+                {messages.filter((m) => m.role !== 'system').map((message) => (
                     <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${message.role === 'user' ? 'bg-zinc-800' : 'bg-cyan-500/10'
                             }`}>
@@ -772,6 +875,7 @@ const ChatInterface = ({ onClose, isFullscreen, toggleFullscreen }: { onClose: (
                     </button>
                 </div>
             </form>
+            </div>
         </div>
     );
 };
@@ -818,44 +922,45 @@ NEVER leave subject or body empty. Always generate compelling, ready-to-send con
 
     const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
 
+    // Keep TamboProvider always mounted so chat history persists across open/close
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-                    />
+        <CompanyContext.Provider value={company || null}>
+            <TamboProvider
+                apiKey={import.meta.env.VITE_TAMBO_API_KEY || "demo"}
+                userKey={userKey || "guest-recruiter"}
+                components={components}
+            >
+                <AnimatePresence>
+                    {isOpen && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={onClose}
+                                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+                            />
 
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className={`fixed top-0 bottom-0 bg-black shadow-2xl z-[101] ${isFullscreen
-                            ? 'left-0 right-0 border-none'
-                            : 'right-0 w-full max-w-md border-l border-zinc-800'
-                            }`}
-                    >
-                        <CompanyContext.Provider value={company || null}>
-                            <TamboProvider
-                                apiKey={import.meta.env.VITE_TAMBO_API_KEY || "demo"}
-                                userKey={userKey || "guest-recruiter"}
-                                components={components}
+                            <motion.div
+                                initial={{ x: '100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                className={`fixed top-0 bottom-0 bg-black shadow-2xl z-[101] ${isFullscreen
+                                    ? 'left-0 right-0 border-none'
+                                    : 'right-0 w-full max-w-md border-l border-zinc-800'
+                                    }`}
                             >
                                 <ChatInterface
                                     onClose={onClose}
                                     isFullscreen={isFullscreen}
                                     toggleFullscreen={toggleFullscreen}
                                 />
-                            </TamboProvider>
-                        </CompanyContext.Provider>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+            </TamboProvider>
+        </CompanyContext.Provider>
     );
 };

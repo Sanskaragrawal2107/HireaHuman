@@ -1,20 +1,41 @@
 
 import { useEffect, useState } from 'react';
-import { Settings, Clock, CheckCircle, XCircle, Building2, Users, Briefcase, ExternalLink, Globe, Loader2, LogOut, ChevronRight, BarChart3, FileText, Shield } from 'lucide-react';
+import { Settings, Clock, CheckCircle, XCircle, Building2, Users, Briefcase, ExternalLink, Globe, Loader2, LogOut, BarChart3, Shield, UserCheck, Mail, MapPin, Star, Calendar } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 import { RecruiterChatbot } from '../components/RecruiterChatbot';
+
+interface HiringRecord {
+    id: string;
+    candidate_id: string;
+    status: string;
+    email_sent: boolean;
+    notes: string;
+    created_at: string;
+    hired_at: string;
+    interview_scheduled: boolean;
+    handle: string;
+    display_name: string;
+    role_title: string;
+    skills: string[];
+    employment_status: string;
+    avatar_url: string;
+    location: string;
+}
 
 export const RecruiterDashboard = () => {
     const navigate = useNavigate();
     const [company, setCompany] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [profileCount, setProfileCount] = useState(0);
-    const [shortlistedCount, setShortlistedCount] = useState(0);
-    const [interviewCount, setInterviewCount] = useState(0);
     const [description, setDescription] = useState('');
     const [savingDesc, setSavingDesc] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
+
+    // Real hiring data
+    const [hiredCandidates, setHiredCandidates] = useState<HiringRecord[]>([]);
+    const [shortlistedCandidates, setShortlistedCandidates] = useState<HiringRecord[]>([]);
+    const [allHirings, setAllHirings] = useState<HiringRecord[]>([]);
 
     useEffect(() => {
         const fetchCompany = async () => {
@@ -31,6 +52,13 @@ export const RecruiterDashboard = () => {
                     navigate('/verify');
                     return;
                 }
+
+                // Block access if payment was never completed
+                if (data.subscription_status !== 'paid' && data.subscription_status !== 'active') {
+                    navigate('/verify');
+                    return;
+                }
+
                 setCompany(data);
                 setDescription(data.description || '');
 
@@ -38,21 +66,32 @@ export const RecruiterDashboard = () => {
                 const { count } = await insforge.database.from('profiles').select('*', { count: 'exact', head: true });
                 if (count) setProfileCount(count);
 
-                // Get shortlisted count (candidates with offered OR hired status)
-                const { count: shortlisted } = await insforge.database
+                // Fetch all hiring records with candidate profile data using a view/join
+                const { data: hirings, error: hiringsError } = await insforge.database
                     .from('hirings')
-                    .select('*', { count: 'exact', head: true })
+                    .select('*')
                     .eq('company_id', data.id)
-                    .in('status', ['offered', 'hired']);
-                if (shortlisted) setShortlistedCount(shortlisted);
+                    .order('created_at', { ascending: false });
 
-                // Get interview count (candidates with interview scheduled)
-                const { count: interviews } = await insforge.database
-                    .from('hirings')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('company_id', data.id)
-                    .eq('interview_scheduled', true);
-                if (interviews) setInterviewCount(interviews);
+                if (!hiringsError && hirings && hirings.length > 0) {
+                    // Fetch candidate profiles for all hiring records
+                    const candidateIds = hirings.map((h: any) => h.candidate_id);
+                    const { data: profiles } = await insforge.database
+                        .from('profiles')
+                        .select('id, handle, display_name, role_title, skills, employment_status, avatar_url, location')
+                        .in('id', candidateIds);
+
+                    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+
+                    const enriched: HiringRecord[] = hirings.map((h: any) => {
+                        const p = profileMap.get(h.candidate_id) || {};
+                        return { ...h, ...p };
+                    });
+
+                    setAllHirings(enriched);
+                    setHiredCandidates(enriched.filter((h: HiringRecord) => h.status === 'hired'));
+                    setShortlistedCandidates(enriched.filter((h: HiringRecord) => h.status === 'offered'));
+                }
             } catch {
                 navigate('/verify');
             } finally {
@@ -75,8 +114,14 @@ export const RecruiterDashboard = () => {
     };
 
     const handleSignOut = async () => {
-        await insforge.auth.signOut();
-        navigate('/');
+        try {
+            await insforge.auth.signOut();
+            localStorage.removeItem('hireahuman_manual_session');
+            window.location.href = '/';
+        } catch (err) {
+            console.error('Logout error:', err);
+            window.location.href = '/';
+        }
     };
 
     if (loading) {
@@ -194,19 +239,128 @@ export const RecruiterDashboard = () => {
                             </div>
                             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                                 <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-2">
-                                    <BarChart3 className="w-3.5 h-3.5" /> Shortlisted
+                                    <UserCheck className="w-3.5 h-3.5" /> Hired
                                 </div>
-                                <div className="text-2xl font-bold text-slate-900">{shortlistedCount}</div>
-                                <div className="text-xs text-slate-400 mt-1">candidates saved</div>
+                                <div className="text-2xl font-bold text-green-600">{hiredCandidates.length}</div>
+                                <div className="text-xs text-slate-400 mt-1">candidates hired</div>
                             </div>
                             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                                 <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-2">
-                                    <Briefcase className="w-3.5 h-3.5" /> Interviews
+                                    <Mail className="w-3.5 h-3.5" /> Shortlisted
                                 </div>
-                                <div className="text-2xl font-bold text-slate-900">{interviewCount}</div>
-                                <div className="text-xs text-slate-400 mt-1">scheduled</div>
+                                <div className="text-2xl font-bold text-blue-600">{shortlistedCandidates.length}</div>
+                                <div className="text-xs text-slate-400 mt-1">offers sent</div>
                             </div>
                         </div>
+
+                        {/* Hired Candidates - Real Data */}
+                        {hiredCandidates.length > 0 && (
+                            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2 text-sm">
+                                    <UserCheck className="w-4 h-4 text-green-600" /> Hired Candidates ({hiredCandidates.length})
+                                </h3>
+                                <div className="space-y-3">
+                                    {hiredCandidates.map((h) => (
+                                        <div key={h.id} className="flex items-center gap-4 p-4 bg-green-50 border border-green-100 rounded-xl">
+                                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                {h.avatar_url ? (
+                                                    <img src={h.avatar_url} alt={h.display_name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <UserCheck className="w-5 h-5 text-green-600" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-slate-900 text-sm">{h.display_name || h.handle}</span>
+                                                    <span className="text-xs text-slate-500">@{h.handle}</span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-0.5">{h.role_title || 'Engineer'}</div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    {h.location && (
+                                                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                                                            <MapPin className="w-2.5 h-2.5" /> {h.location}
+                                                        </span>
+                                                    )}
+                                                    <span className="flex items-center gap-1 text-[10px] text-green-600 font-medium">
+                                                        <CheckCircle className="w-2.5 h-2.5" /> Hired {h.hired_at ? new Date(h.hired_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1 max-w-[150px]">
+                                                {(h.skills || []).slice(0, 3).map((s: string) => (
+                                                    <span key={s} className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full border border-green-200">{s}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Shortlisted / Offered Candidates - Real Data */}
+                        {shortlistedCandidates.length > 0 && (
+                            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2 text-sm">
+                                    <Mail className="w-4 h-4 text-blue-600" /> Shortlisted — Offers Sent ({shortlistedCandidates.length})
+                                </h3>
+                                <div className="space-y-3">
+                                    {shortlistedCandidates.map((h) => (
+                                        <div key={h.id} className="flex items-center gap-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                {h.avatar_url ? (
+                                                    <img src={h.avatar_url} alt={h.display_name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Mail className="w-5 h-5 text-blue-600" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-slate-900 text-sm">{h.display_name || h.handle}</span>
+                                                    <span className="text-xs text-slate-500">@{h.handle}</span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-0.5">{h.role_title || 'Engineer'}</div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    {h.location && (
+                                                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                                                            <MapPin className="w-2.5 h-2.5" /> {h.location}
+                                                        </span>
+                                                    )}
+                                                    {h.email_sent && (
+                                                        <span className="flex items-center gap-1 text-[10px] text-blue-600 font-medium">
+                                                            <Mail className="w-2.5 h-2.5" /> Email sent
+                                                        </span>
+                                                    )}
+                                                    <span className="text-[10px] text-slate-400">
+                                                        {new Date(h.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1 max-w-[150px]">
+                                                {(h.skills || []).slice(0, 3).map((s: string) => (
+                                                    <span key={s} className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] rounded-full border border-blue-200">{s}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Empty state if no hiring activity */}
+                        {hiredCandidates.length === 0 && shortlistedCandidates.length === 0 && (
+                            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center">
+                                <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                                <h3 className="font-semibold text-slate-700 mb-1">No hiring activity yet</h3>
+                                <p className="text-sm text-slate-400 mb-4">Use the AI Talent Search to find and reach out to candidates.</p>
+                                <button
+                                    onClick={() => isVerified && setIsChatOpen(true)}
+                                    disabled={!isVerified}
+                                    className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-all disabled:opacity-60 shadow-lg shadow-blue-600/20"
+                                >
+                                    Start Searching
+                                </button>
+                            </div>
+                        )}
 
                         {/* Company Profile Editor */}
                         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
@@ -304,29 +458,80 @@ export const RecruiterDashboard = () => {
                             </button>
                         </div>
 
-                        {/* Quick Links */}
+                        {/* Scheduled Interviews */}
                         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                            <h3 className="font-semibold text-slate-900 mb-4 text-sm">Quick links</h3>
-                            <div className="space-y-2">
-                                {[
-                                    { label: 'Talent Directory', to: '/browse', icon: Users },
-                                    { label: 'Documentation', to: '#', icon: FileText },
-                                    { label: 'Billing', to: '#', icon: BarChart3 },
-                                ].map(link => (
-                                    <Link
-                                        key={link.label}
-                                        to={link.to}
-                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group text-sm text-slate-600"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            <link.icon className="w-4 h-4 text-slate-400" />
-                                            {link.label}
-                                        </span>
-                                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
-                                    </Link>
-                                ))}
-                            </div>
+                            <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2 text-sm">
+                                <Calendar className="w-4 h-4 text-slate-500" /> Scheduled Interviews
+                            </h3>
+                            {(() => {
+                                const interviewCandidates = allHirings.filter(h => h.interview_scheduled);
+                                if (interviewCandidates.length === 0) {
+                                    return (
+                                        <div className="text-center py-4">
+                                            <Calendar className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                            <p className="text-xs text-slate-400">No interviews scheduled yet.</p>
+                                            <p className="text-[10px] text-slate-300 mt-1">Use the AI agent to schedule interviews.</p>
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div className="space-y-3">
+                                        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 mb-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-indigo-600 font-medium">Total Scheduled</span>
+                                                <span className="text-lg font-bold text-indigo-700">{interviewCandidates.length}</span>
+                                            </div>
+                                        </div>
+                                        {interviewCandidates.map(h => (
+                                            <div key={h.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                    {h.avatar_url ? (
+                                                        <img src={h.avatar_url} alt={h.display_name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Calendar className="w-4 h-4 text-indigo-600" />
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="text-xs font-semibold text-slate-900 truncate">{h.display_name || h.handle}</div>
+                                                    <div className="text-[10px] text-slate-400">{h.role_title || 'Engineer'}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
+
+                        {/* Recent Activity Timeline */}
+                        {allHirings.length > 0 && (
+                            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2 text-sm">
+                                    <Clock className="w-4 h-4 text-slate-500" /> Recent Activity
+                                </h3>
+                                <div className="space-y-4">
+                                    {allHirings.slice(0, 5).map(h => (
+                                        <div key={h.id} className="flex items-start gap-3">
+                                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                                                h.status === 'hired' ? 'bg-green-500' : 'bg-blue-500'
+                                            }`} />
+                                            <div className="min-w-0">
+                                                <div className="text-xs text-slate-700">
+                                                    {h.status === 'hired' ? (
+                                                        <><span className="font-semibold">{h.display_name || h.handle}</span> was hired</>
+                                                    ) : (
+                                                        <>Offer sent to <span className="font-semibold">{h.display_name || h.handle}</span></>
+                                                    )}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 mt-0.5">
+                                                    {new Date(h.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                    {h.email_sent && ' · Email sent'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Account Info */}
                         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
@@ -346,12 +551,13 @@ export const RecruiterDashboard = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">Plan</span>
-                                    <span className={`font-medium ${company.subscription_status === 'active' ? 'text-blue-600' : 'text-slate-400'}`}>
+                                    <span className={`font-medium ${company.subscription_status === 'active' || company.subscription_status === 'paid' ? 'text-blue-600' : 'text-slate-400'}`}>
                                         {company.subscription_plan === 'verified_plus_chatbot' ? 'Verified + AI Agent' :
-                                            company.subscription_plan === 'verified' ? 'Verified' : 'No Plan'}
+                                            company.subscription_plan === 'verified' ? 'Verified' :
+                                            company.subscription_status === 'paid' ? 'Verified' : 'No Plan'}
                                     </span>
                                 </div>
-                                {company.subscription_status === 'active' && company.subscription_expires_at && (
+                                {(company.subscription_status === 'active' || company.subscription_status === 'paid') && company.subscription_expires_at && (
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Renews</span>
                                         <span className="text-slate-700">

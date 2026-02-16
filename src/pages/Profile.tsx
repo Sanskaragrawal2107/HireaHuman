@@ -232,6 +232,7 @@ export const ProfilePage = () => {
         skills: [] as string[],
         github_url: '',
         linkedin_url: '',
+        leetcode_url: '',
         preferred_location: '',
         avatar_url: '',
         employment_status: 'AVAILABLE',
@@ -298,6 +299,7 @@ export const ProfilePage = () => {
                     skills: profile.skills || [],
                     github_url: profile.github_url || '',
                     linkedin_url: profile.linkedin_url || '',
+                    leetcode_url: profile.leetcode_url || '',
                     preferred_location: profile.preferred_location || '',
                     avatar_url: profile.avatar_url || '',
                     employment_status: profile.employment_status || 'AVAILABLE',
@@ -367,6 +369,7 @@ export const ProfilePage = () => {
                 skills: formData.skills,
                 github_url: formData.github_url,
                 linkedin_url: formData.linkedin_url,
+                leetcode_url: formData.leetcode_url,
                 preferred_location: formData.preferred_location,
                 avatar_url: formData.avatar_url,
                 employment_status: formData.employment_status,
@@ -839,6 +842,16 @@ export const ProfilePage = () => {
                                     value={formData.linkedin_url}
                                     onChange={e => setFormData({ ...formData, linkedin_url: e.target.value })}
                                     placeholder="https://linkedin.com/in/username"
+                                    className="w-full bg-zinc-900/50 border border-zinc-700 text-white p-4 rounded focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 font-mono transition-all"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-mono text-zinc-500 uppercase flex items-center gap-1"><Code className="w-3 h-3" /> LeetCode URL</label>
+                                <input
+                                    type="url"
+                                    value={formData.leetcode_url}
+                                    onChange={e => setFormData({ ...formData, leetcode_url: e.target.value })}
+                                    placeholder="https://leetcode.com/u/username"
                                     className="w-full bg-zinc-900/50 border border-zinc-700 text-white p-4 rounded focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 font-mono transition-all"
                                 />
                             </div>
