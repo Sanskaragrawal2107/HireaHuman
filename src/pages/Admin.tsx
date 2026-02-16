@@ -6,7 +6,7 @@ import { logger } from '../lib/logger';
 import { useAuth } from '../context/AuthContext';
 
 export const AdminPage = () => {
-    const { user: authUser, loading: authContextLoading } = useAuth();
+    const { user: authUser, loading: authContextLoading, refreshSession } = useAuth();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
     const [companies, setCompanies] = useState<any[]>([]);
@@ -108,6 +108,9 @@ export const AdminPage = () => {
                 
                 throw new Error(errorDetails);
             }
+
+            // Update AuthContext with the new session
+            await refreshSession();
 
             setIsAuthenticated(true);
             fetchCompanies();
