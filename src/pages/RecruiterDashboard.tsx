@@ -117,7 +117,6 @@ export const RecruiterDashboard = () => {
     const handleSignOut = async () => {
         try {
             await insforge.auth.signOut();
-            localStorage.removeItem('hireahuman_manual_session');
             window.location.href = '/';
         } catch (err) {
             logger.error('Logout error:', err);

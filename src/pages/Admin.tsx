@@ -76,7 +76,6 @@ export const AdminPage = () => {
 
             if (adminError || !adminData?.isAdmin) {
                 await insforge.auth.signOut();
-                localStorage.removeItem('hireahuman_manual_session');
                 throw new Error("Unauthorized access. Admin privileges required.");
             }
 
@@ -234,7 +233,6 @@ export const AdminPage = () => {
                     <button
                         onClick={async () => {
                             await insforge.auth.signOut();
-                            localStorage.removeItem('hireahuman_manual_session');
                             setIsAuthenticated(false);
                             window.location.href = '/';
                         }}

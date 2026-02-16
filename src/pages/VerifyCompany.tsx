@@ -623,7 +623,6 @@ export const VerifyCompanyPage = () => {
                                         <button
                                             onClick={async () => {
                                                 await insforge.auth.signOut();
-                                                localStorage.removeItem('hireahuman_manual_session');
                                                 setUser(null);
                                                 setStep('login');
                                             }}

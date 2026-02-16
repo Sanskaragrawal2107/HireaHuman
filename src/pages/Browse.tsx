@@ -51,23 +51,10 @@ export const BrowsePage = () => {
             if (error) {
                 // Handle JWT expiration error
                 if ((error.code === 'PGRST301' || error.message?.includes('JWT')) && retryCount === 0) {
-                    logger.warn('JWT expired, clearing stored session and retrying with anonKey...');
+                    logger.warn('JWT expired, signing out and retrying...');
                     
-                    // Clear expired token from storage
-                    localStorage.removeItem('hireahuman_manual_session');
-                    sessionStorage.removeItem('hireahuman_logged_out');
-                    
-                    // Clear from SDK token manager
-                    // @ts-ignore
-                    if (insforge.auth?.tokenManager) {
-                        // @ts-ignore
-                        insforge.auth.tokenManager.clearSession();
-                    }
-                    // @ts-ignore
-                    if (insforge.http) {
-                        // @ts-ignore
-                        insforge.http.setAuthToken(null);
-                    }
+                    // Sign out to clear expired session
+                    try { await insforge.auth.signOut(); } catch (_) {}
                     
                     // Retry once with clean state (will use anonKey)
                     await fetchProfiles(1);

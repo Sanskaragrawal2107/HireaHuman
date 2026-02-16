@@ -144,9 +144,8 @@ export const DashboardPage = () => {
 
     const handleLogout = async () => {
         try {
-            // Clear authentication and local storage
+            // Clear authentication
             await insforge.auth.signOut();
-            localStorage.removeItem('hireahuman_manual_session');
             
             // Force a full page reload to clear all state
             window.location.href = '/';
