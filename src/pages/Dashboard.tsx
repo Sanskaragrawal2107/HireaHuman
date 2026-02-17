@@ -177,7 +177,7 @@ export const DashboardPage = () => {
             });
 
             if (error) throw error;
-            const { key, txnid, amount, productinfo, firstname, email, surl, furl, hash, udf1, payu_base_url } = data;
+            const { key, txnid, amount, productinfo, firstname, email, surl, furl, hash, udf1, payu_base_url: _payu_base_url } = data;
 
             // 2. Launch PayU Bolt checkout
             // @ts-ignore
