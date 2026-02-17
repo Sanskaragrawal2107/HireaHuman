@@ -296,7 +296,7 @@ export const VerifyCompanyPage = () => {
                 txnid,
                 hash,
                 amount,
-                firstname: companyData.companyName || firstname,
+                firstname,
                 email,
                 phone: '9406820661',
                 productinfo,

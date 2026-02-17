@@ -190,7 +190,7 @@ export const DashboardPage = () => {
                 txnid,
                 hash,
                 amount,
-                firstname: profile.display_name || firstname,
+                firstname,
                 email,
                 phone: '9406820661',
                 productinfo,
