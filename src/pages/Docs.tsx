@@ -123,7 +123,8 @@ Output: {
                 <div className="pt-12 border-t border-zinc-800 flex justify-between items-center text-sm text-zinc-600">
                     <div className="flex flex-col gap-1">
                         <span>HireAHuman API v1.2.0</span>
-                        <span className="text-[10px] text-zinc-700">Built by Sanskar Agrawal | +91 9406820661</span>
+                        <span className="text-[10px] text-zinc-700">Built by Sanskar Agrawal | +91 9406820661 | sanskar21072005@gmail.com</span>
+                        <span className="text-[10px] text-zinc-700">36 Tilak Path Gulab Bhawan Flat No. 104 Indore MP</span>
                     </div>
 
                     <span>Status: <span className="text-green-500">OPERATIONAL</span></span>
