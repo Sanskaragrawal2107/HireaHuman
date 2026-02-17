@@ -53,8 +53,8 @@ export default async function (req) {
         
         const productinfo = "BlueTech Badge Monthly";
         const firstname = (email.split('@')[0] || 'User').substring(0, 50);
-        const surl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/dashboard?payment=success&type=subscription&txnid=${txnid}`;
-        const furl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/dashboard?payment=failed&type=subscription`;
+        const surl = `${Deno.env.get("FRONTEND_URL") || "https://hire-a-human.app"}/dashboard?payment=success&type=subscription&txnid=${txnid}`;
+        const furl = `${Deno.env.get("FRONTEND_URL") || "https://hire-a-human.app"}/dashboard?payment=failed&type=subscription`;
 
         // Generate PayU hash: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
         const hashString = `${PAYU_KEY}|${txnid}|${PLAN_AMOUNT}|${productinfo}|${firstname}|${email}|${user_id}|||||||||${PAYU_SALT}`;

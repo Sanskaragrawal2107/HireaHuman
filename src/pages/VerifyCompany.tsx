@@ -298,7 +298,7 @@ export const VerifyCompanyPage = () => {
                 amount,
                 firstname: companyData.companyName || firstname,
                 email,
-                phone: '',
+                phone: '9406820661',
                 productinfo,
                 surl,
                 furl,
@@ -332,8 +332,8 @@ export const VerifyCompanyPage = () => {
                     }
                 },
                 catchException: function (error: any) {
-                    logger.error("PayU Bolt error:", error);
-                    setError('Payment failed: ' + (error.message || 'Unknown error'));
+                    logger.error("PayU Bolt error:", JSON.stringify(error));
+                    setError('Payment failed: ' + (typeof error === 'string' ? error : error?.message || JSON.stringify(error)));
                 }
             });
 

@@ -192,7 +192,7 @@ export const DashboardPage = () => {
                 amount,
                 firstname: profile.display_name || firstname,
                 email,
-                phone: '',
+                phone: '9406820661',
                 productinfo,
                 surl,
                 furl,
@@ -224,8 +224,8 @@ export const DashboardPage = () => {
                     }
                 },
                 catchException: function (error: any) {
-                    logger.error("PayU Bolt error:", error);
-                    alert("Payment failed: " + (error.message || 'Unknown error'));
+                    logger.error("PayU Bolt error:", JSON.stringify(error));
+                    alert("Payment failed: " + (typeof error === 'string' ? error : error?.message || JSON.stringify(error)));
                 }
             });
 

@@ -71,8 +71,8 @@ export default async function (req) {
 
         const productinfo = "Company Verification Deposit";
         const firstname = (email.split('@')[0] || 'User').substring(0, 50);
-        const surl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/verify-company?payment=success&type=company&txnid=${txnid}`;
-        const furl = `${Deno.env.get("FRONTEND_URL") || "https://hireahuman.vercel.app"}/verify-company?payment=failed&type=company`;
+        const surl = `${Deno.env.get("FRONTEND_URL") || "https://hire-a-human.app"}/verify-company?payment=success&type=company&txnid=${txnid}`;
+        const furl = `${Deno.env.get("FRONTEND_URL") || "https://hire-a-human.app"}/verify-company?payment=failed&type=company`;
 
         // Generate PayU hash: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
         const hashString = `${PAYU_KEY}|${txnid}|${COMPANY_AMOUNT}|${productinfo}|${firstname}|${email}|${user_id}|${company_id}||||||||${PAYU_SALT}`;
