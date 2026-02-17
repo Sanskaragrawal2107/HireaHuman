@@ -207,7 +207,11 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                                 </a>
                             </div>
                         </div>
-                        <div className="uppercase tracking-widest text-xs">EST. 2026 // INDORE, MP</div>
+                        <div className="flex flex-col items-center md:items-end gap-1">
+                            <div className="uppercase tracking-widest text-xs">EST. 2026 // INDORE, MP</div>
+                            <div className="text-[10px] text-zinc-500 tracking-wider">Built by Sanskar Agrawal</div>
+                            <div className="text-[10px] text-zinc-500 tracking-wider">+91 9406820661</div>
+                        </div>
                     </div>
                 </footer>
             </div>
