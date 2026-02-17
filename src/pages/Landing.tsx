@@ -187,85 +187,80 @@ export const LandingPage = () => {
                 <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 text-center lg:text-left">
                     <div className="flex-1 max-w-2xl">
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-[10px] font-mono tracking-widest mb-6 uppercase">
-                            <TrendingUp className="w-3 h-3" /> Recruiters perspective_
+                            <TrendingUp className="w-3 h-3" /> Talent Discovery_
                         </div>
                         <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-white mb-6 leading-none">
-                            HIRE VERIFIED <br />
-                            <span className="text-cyan-500">ENGINEERS, FAST.</span>
+                            FIND GENUINE <br />
+                            <span className="text-cyan-500">ENGINEERS, QUICKLY.</span>
                         </h2>
                         <p className="text-lg md:text-xl text-zinc-400 mb-10 leading-relaxed font-light">
-                            With AI-powered search, real GitHub + LeetCode signal analysis, and instant shortlists — find your next hire in minutes.
+                            Stop sifted through fake resumes. We analyze their actual code on GitHub and LeetCode to find you the top experts who can actually build.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto lg:mx-0">
+                        <div className="flex flex-col sm:flex-row gap-4 max-w-sm mx-auto lg:mx-0">
                             <Link to="/verify" className="flex-1 py-4 bg-white text-black font-bold uppercase tracking-wider text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_20px_rgba(6,182,212,0.1)] flex items-center justify-center gap-2">
                                 Start Hiring <Zap className="w-4 h-4" />
                             </Link>
-                            <a href="https://calendly.com/" target="_blank" rel="noopener noreferrer" className="flex-1 py-4 border border-zinc-800 bg-black text-white font-bold uppercase tracking-wider text-xs hover:border-zinc-500 transition-all flex items-center justify-center gap-2 group">
-                                Book a Demo <ExternalLink className="w-3 h-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                            </a>
                         </div>
                     </div>
 
                     <div className="flex-1 grid grid-cols-2 gap-4 max-w-md w-full">
                         <div className="p-4 border border-zinc-800 bg-black rounded-lg text-center">
-                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Time to Shortlist</div>
+                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Time to Find Talent</div>
                             <div className="text-white text-2xl font-bold font-mono tracking-tighter">&lt; 15 mins</div>
                         </div>
                         <div className="p-4 border border-zinc-800 bg-black rounded-lg text-center">
-                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Candidate Signal</div>
-                            <div className="text-white text-2xl font-bold font-mono tracking-tighter">Verified GitHub</div>
+                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Proof of Work</div>
+                            <div className="text-white text-2xl font-bold font-mono tracking-tighter">Real Code Only</div>
                         </div>
                         <div className="p-4 border border-zinc-800 bg-black rounded-lg text-center col-span-2">
-                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Fill Rate</div>
-                            <div className="text-cyan-500 text-2xl font-bold font-mono tracking-tighter">92.4% Optimal Match</div>
+                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Success Rate</div>
+                            <div className="text-cyan-500 text-2xl font-bold font-mono tracking-tighter">92.4% Right Selection</div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* GITHUB SCANNING FEATURE - THE VERIFIER */}
-            < section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden" >
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-900/10 to-transparent pointer-events-none" />
+            {/* TALENT VERIFICATION SECTION */}
+            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden" >
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-cyan-900/10 to-transparent pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row items-center gap-16 relative z-10">
                     <div className="w-full md:w-1/2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 text-xs font-mono tracking-widest mb-6 uppercase">
-                            <Github className="w-3 h-3" /> Source Code Verification
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-mono tracking-widest mb-6 uppercase">
+                            <Zap className="w-3 h-3" /> Talent Verification
                         </div>
                         <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-6 leading-tight">
                             RESUMES LIE.<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 uppercase">
                                 COMMIT LOGS DON'T.
                             </span>
                         </h2>
                         <p className="text-xl text-zinc-400 font-light mb-8 leading-relaxed">
-                            Every candidate claims they know "System Design." <br />
-                            <span className="text-white font-medium">We verify who actually wrote the code.</span>
+                            Every candidate claims they are an "Expert." <br />
+                            <span className="text-white font-medium">We check their real code and LeetCode stats to prove it.</span>
                         </p>
-
-                        <div className="inline-block px-4 py-2 border border-red-500/20 bg-red-500/10 rounded mb-8">
-                            <span className="text-red-400 text-xs font-mono font-bold tracking-widest uppercase flex items-center gap-2">
-                                <Lock className="w-3 h-3" /> Exclusive to Verified Companies
-                            </span>
-                        </div>
 
                         <div className="space-y-6">
                             <div className="flex gap-4">
                                 <div className="mt-1">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-500">1</div>
+                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-cyan-500">
+                                        <Github className="w-4 h-4" />
+                                    </div>
                                 </div>
                                 <div>
-                                    <h3 className="text-white font-bold text-lg">Deep Repo Analysis</h3>
-                                    <p className="text-zinc-500 text-sm mt-1">We don't just read the README. Our agents scan commit history, PR complexity, and code architecture.</p>
+                                    <h3 className="text-white font-bold text-lg">GitHub Proof</h3>
+                                    <p className="text-zinc-500 text-sm mt-1">We analyze their actual projects and commits. No more guessing if they can actually build.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <div className="mt-1">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-500">2</div>
+                                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-cyan-500">
+                                        <Code2 className="w-4 h-4" />
+                                    </div>
                                 </div>
                                 <div>
-                                    <h3 className="text-white font-bold text-lg">Bluff Detection</h3>
-                                    <p className="text-zinc-500 text-sm mt-1">Claiming 5 years of Rust? We check if you've actually shipped it in production or just forked a "Hello World".</p>
+                                    <h3 className="text-white font-bold text-lg">LeetCode Angle</h3>
+                                    <p className="text-zinc-500 text-sm mt-1">We track their problem-solving skills and rankings. You get engineers who can think, not just copy-paste.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
@@ -275,44 +270,35 @@ export const LandingPage = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <h3 className="text-white font-bold text-lg">Verified "Human" Badge</h3>
-                                    <p className="text-zinc-500 text-sm mt-1">Only verified builders get visible to top companies. No more competing with ChatGPT-generated CVs.</p>
+                                    <h3 className="text-white font-bold text-lg">Zero Fake Resumes</h3>
+                                    <p className="text-zinc-500 text-sm mt-1">Only builders with a real track record get shortlisted. You only talk to the best.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="w-full md:w-1/2 relative">
-                        {/* Mock Terminal/Code Scan UI */}
-                        <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl relative">
-                            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
-                                <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                                <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                                <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
-                                <div className="ml-auto text-xs font-mono text-zinc-600">scanner_v2.py</div>
+                    <div className="w-full md:w-1/2 relative grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <SignalCard 
+                            label="GitHub Activity" 
+                            value="3.1k+ Commits" 
+                            description="Real project contributions verified."
+                            icon={<Github className="w-5 h-5" />}
+                            color="text-purple-500"
+                        />
+                        <SignalCard 
+                            label="LeetCode Rank" 
+                            value="Top 0.5%" 
+                            description="Problem solving expertise proven."
+                            icon={<Code2 className="w-5 h-5" />}
+                            color="text-yellow-500"
+                        />
+                        <div className="sm:col-span-2 p-4 border border-zinc-900 bg-zinc-950/50 backdrop-blur rounded-lg flex items-center gap-4 group hover:border-cyan-500/20 transition-colors mt-2">
+                            <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-500 text-[10px] font-mono border border-cyan-500/20">A</div>
+                            <div className="flex-1">
+                                <div className="text-zinc-500 text-[8px] uppercase font-mono mb-0.5 tracking-widest">Verification Status_</div>
+                                <div className="text-white text-[10px] font-mono whitespace-nowrap overflow-hidden text-ellipsis">Confirmed: Top 1% LeetCode solver with high-quality GitHub contributions.</div>
                             </div>
-                            <div className="p-6 font-mono text-xs md:text-sm space-y-2">
-                                <div className="text-zinc-500">$ scan --user "dev_rockstar" --deep</div>
-                                <div className="text-yellow-500">→ INITIALIZING GIT CRAWLER...</div>
-                                <div className="text-zinc-400">→ Analyzing 42 repositories...</div>
-                                <div className="text-zinc-500">...</div>
-                                <div className="pl-4 border-l-2 border-red-500/30 text-zinc-400">
-                                    <span className="text-red-500 mr-2">[ALERT]</span>
-                                    'Advanced AI Architecture' repo is a fork (98% match)
-                                </div>
-                                <div className="pl-4 border-l-2 border-green-500/30 text-zinc-400">
-                                    <span className="text-green-500 mr-2">[PASS]</span>
-                                    Consistent contribution graph (3.2 yrs) - TypeScript/Rust
-                                </div>
-                                <div className="text-zinc-400">→ Calculating Reality Score...</div>
-                                <div className="mt-4 p-4 bg-zinc-900/50 border border-zinc-800 rounded flex items-center justify-between">
-                                    <span className="text-zinc-300">REALITY SCORE:</span>
-                                    <span className="text-green-400 font-bold block animate-pulse">94/100 (VERIFIED)</span>
-                                </div>
-                            </div>
-
-                            {/* Scanning overlay effect */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent h-[20%] w-full animate-scan pointer-events-none" />
+                            <div className="text-cyan-400 text-[10px] font-mono font-bold uppercase tracking-widest">Ready to Hire</div>
                         </div>
                     </div>
                 </div>
