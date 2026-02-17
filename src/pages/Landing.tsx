@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Shield, Code, Cpu, Database, Github, Zap, Search, Lock, CheckCircle2 } from 'lucide-react';
+import { Shield, Code, Cpu, Database, Github, Zap, Search, Lock, CheckCircle2, ExternalLink, Target, Star, BarChart3, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 import { logger } from '../lib/logger';
@@ -179,6 +179,50 @@ export const LandingPage = () => {
                 <ScrollMarquee items={TECH_STACK} speed={40} />
             </section >
 
+            {/* RECRUITER HERO SECTION */}
+            <section className="relative py-24 px-6 md:px-12 max-w-7xl mx-auto border border-zinc-900 bg-zinc-950/20 overflow-hidden rounded-3xl my-24 border border-zinc-800/20 scale-95 hover:scale-100 transition-all duration-700">
+                <div className="absolute top-0 right-0 w-[40%] h-[100%] bg-cyan-600/5 blur-[120px] rounded-full -mr-32 -mt-32" />
+                <div className="absolute bottom-0 left-0 w-[30%] h-[100%] bg-blue-600/5 blur-[100px] rounded-full -ml-32 -mb-32" />
+                
+                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 text-center lg:text-left">
+                    <div className="flex-1 max-w-2xl">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-[10px] font-mono tracking-widest mb-6 uppercase">
+                            <TrendingUp className="w-3 h-3" /> Recruiters perspective_
+                        </div>
+                        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-white mb-6 leading-none">
+                            HIRE VERIFIED <br />
+                            <span className="text-cyan-500">ENGINEERS, FAST.</span>
+                        </h2>
+                        <p className="text-lg md:text-xl text-zinc-400 mb-10 leading-relaxed font-light">
+                            With AI-powered search, real GitHub + LeetCode signal analysis, and instant shortlists — find your next hire in minutes.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto lg:mx-0">
+                            <Link to="/verify" className="flex-1 py-4 bg-white text-black font-bold uppercase tracking-wider text-xs hover:bg-cyan-500 hover:text-white transition-all shadow-[0_0_20px_rgba(6,182,212,0.1)] flex items-center justify-center gap-2">
+                                Start Hiring <Zap className="w-4 h-4" />
+                            </Link>
+                            <a href="https://calendly.com/" target="_blank" rel="noopener noreferrer" className="flex-1 py-4 border border-zinc-800 bg-black text-white font-bold uppercase tracking-wider text-xs hover:border-zinc-500 transition-all flex items-center justify-center gap-2 group">
+                                Book a Demo <ExternalLink className="w-3 h-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 grid grid-cols-2 gap-4 max-w-md w-full">
+                        <div className="p-4 border border-zinc-800 bg-black rounded-lg text-center">
+                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Time to Shortlist</div>
+                            <div className="text-white text-2xl font-bold font-mono tracking-tighter">&lt; 15 mins</div>
+                        </div>
+                        <div className="p-4 border border-zinc-800 bg-black rounded-lg text-center">
+                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Candidate Signal</div>
+                            <div className="text-white text-2xl font-bold font-mono tracking-tighter">Verified GitHub</div>
+                        </div>
+                        <div className="p-4 border border-zinc-800 bg-black rounded-lg text-center col-span-2">
+                            <div className="text-zinc-500 text-[10px] uppercase font-mono mb-1">Fill Rate</div>
+                            <div className="text-cyan-500 text-2xl font-bold font-mono tracking-tighter">92.4% Optimal Match</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* GITHUB SCANNING FEATURE - THE VERIFIER */}
             < section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden" >
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-purple-900/10 to-transparent pointer-events-none" />
@@ -273,6 +317,53 @@ export const LandingPage = () => {
                     </div>
                 </div>
             </section >
+
+            {/* TECHNICAL SIGNAL REPORT SECTION */}
+            <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative overflow-hidden bg-black/40 rounded-3xl mb-24 border border-zinc-800/10">
+                <div className="text-center mb-16 space-y-4">
+                    <div className="inline-flex items-center gap-2 text-pink-500 font-mono text-xs uppercase tracking-[0.4em] mb-4">
+                        <BarChart3 className="w-4 h-4" /> Recruiter_Insight_v2
+                    </div>
+                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter">
+                        WHAT RECRUITERS SEE
+                    </h2>
+                    <p className="text-zinc-500 font-mono text-sm max-w-2xl mx-auto leading-relaxed">
+                        We don't just show portfolios. We provide a deep-dive technical signal report for every candidate.
+                        Our AI analyzes actual developer output to create a "Reality Score" — not just a LinkedIn endorsement.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <SignalCard 
+                        label="GitHub Reality Score" 
+                        value="94/100" 
+                        description="Real commits vs forked code analysis"
+                        icon={<Github className="w-5 h-5" />}
+                        color="text-purple-500"
+                    />
+                    <SignalCard 
+                        label="LeetCode Performance" 
+                        value="TOP 1%" 
+                        description="Algorithmic problem solving verified"
+                        icon={<Code className="w-5 h-5" />}
+                        color="text-yellow-500"
+                    />
+                    <SignalCard 
+                        label="Project Depth" 
+                        value="SENIOR" 
+                        description="Architecture complexity & scaling signal"
+                        icon={<Cpu className="w-5 h-5" />}
+                        color="text-blue-500"
+                    />
+                    <SignalCard 
+                        label="Skill Match %" 
+                        value="98.2%" 
+                        description="Instant alignment with your job description"
+                        icon={<Target className="w-5 h-5" />}
+                        color="text-green-500"
+                    />
+                </div>
+            </section>
 
             {/* AUTOMATIC SEARCH EXPLAINER - ZERO QUERY */}
             < section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-zinc-900 relative" >
@@ -495,5 +586,26 @@ const StatBox = ({ number, label, color, isLive }: { number: string, label: stri
             {isLive && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />}
         </div>
         <div className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] mt-3 font-bold border-t border-zinc-800/50 inline-block pt-2">{label}</div>
+    </div>
+);
+
+const SignalCard = ({ label, value, description, icon, color }: { label: string, value: string, description: string, icon: React.ReactNode, color: string }) => (
+    <div className="p-6 border border-zinc-800 bg-zinc-900/30 rounded-xl relative overflow-hidden group hover:border-zinc-700 transition-all">
+        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            {icon}
+        </div>
+        <div className={`text-xs font-mono tracking-widest uppercase mb-2 ${color} flex items-center gap-2`}>
+            {icon} {label}
+        </div>
+        <div className="text-3xl font-black text-white mb-2 font-mono">{value}</div>
+        <p className="text-zinc-500 text-[10px] uppercase tracking-wider">{description}</p>
+        <div className="mt-4 pt-4 border-t border-zinc-800/50 flex justify-between items-center">
+            <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className={`w-2 h-2 ${s <= 4 ? color : 'text-zinc-800'}`} fill="currentColor" />
+                ))}
+            </div>
+            <span className="text-[8px] font-mono text-zinc-600">SIGNAL_VERIFIED</span>
+        </div>
     </div>
 );
