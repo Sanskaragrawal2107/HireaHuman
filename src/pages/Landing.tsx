@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Shield, Code, Cpu, Database, Github, Zap, Search, Lock, CheckCircle2, ExternalLink, Target, Star, BarChart3, TrendingUp } from 'lucide-react';
+import { Shield, Code, Code2, Cpu, Database, Github, Zap, Search, Lock, CheckCircle2, Target, Star, BarChart3, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 import { logger } from '../lib/logger';
