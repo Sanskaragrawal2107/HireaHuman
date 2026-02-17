@@ -207,7 +207,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
                                 </a>
                             </div>
                         </div>
-                        <div className="uppercase tracking-widest text-xs">EST. 2026 // SAN FRANCISCO + BANGALORE</div>
+                        <div className="uppercase tracking-widest text-xs">EST. 2026 // INDORE, MP</div>
                     </div>
                 </footer>
             </div>
