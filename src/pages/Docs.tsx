@@ -73,63 +73,86 @@ export const DocsPage = () => {
     const [activeIDE, setActiveIDE] = useState('cursor');
 
     const ideConfigs: Record<string, { config: string; path: string; notes: string }> = {
-        cursor: {
-            config: `{
-  "mcpServers": {
-    "hireahuman": {
-      "url": "${MCP_URL}"
+                cursor: {
+                        config: `{
+    "mcpServers": {
+        "hireahuman": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "https://HireAHuman.fastmcp.app/mcp"
+            ]
+        }
     }
-  }
 }`,
-            path: 'Settings → MCP → Add Server → paste URL, or add to .cursor/mcp.json',
-            notes: 'Cursor natively supports remote MCP servers via URL. No local setup required.',
-        },
-        claude: {
-            config: `{
-  "mcpServers": {
-    "hireahuman": {
-      "url": "${MCP_URL}"
+                        path: 'Settings → MCP → Add Server → use the npx mcp-remote command or add to .cursor/mcp.json',
+                        notes: 'Recommended: use the official `mcp-remote` helper via npx to connect Cursor directly to the hosted MCP endpoint.',
+                },
+                claude: {
+                        config: `{
+    "mcpServers": {
+        "hireahuman": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "${MCP_URL}"
+            ]
+        }
     }
-  }
 }`,
-            path: '~/.claude/claude_desktop_config.json (macOS/Linux) or %APPDATA%\\Claude\\claude_desktop_config.json (Windows)',
-            notes: 'Claude Desktop supports remote MCP via URL. Restart Claude Desktop after adding.',
-        },
-        vscode: {
-            config: `// .vscode/mcp.json (workspace-level)
-{
-  "servers": {
-    "hireahuman": {
-      "type": "sse",
-      "url": "${MCP_URL}"
+                        path: 'Add to Claude Desktop config or run the npx mcp-remote command directly',
+                        notes: 'Preferred: use `npx mcp-remote <MCP_URL>` to connect Claude Desktop to the hosted MCP endpoint.',
+                },
+                vscode: {
+                        config: `{
+    "mcpServers": {
+        "hireahuman": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "${MCP_URL}"
+            ]
+        }
     }
-  }
 }`,
-            path: '.vscode/mcp.json in your project root, or add via Settings → GitHub Copilot → MCP',
-            notes: 'Requires GitHub Copilot Chat extension. Works with Copilot Agent mode.',
-        },
-        windsurf: {
-            config: `{
-  "mcpServers": {
-    "hireahuman": {
-      "serverUrl": "${MCP_URL}"
+                        path: 'Run in terminal or add to workspace .vscode/mcp.json as a startup command',
+                        notes: 'Recommended for VS Code/Copilot: run `npx -y mcp-remote <MCP_URL>` to expose the remote MCP to the editor.',
+                },
+                windsurf: {
+                        config: `{
+    "mcpServers": {
+        "hireahuman": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "${MCP_URL}"
+            ]
+        }
     }
-  }
 }`,
-            path: '~/.codeium/windsurf/mcp_config.json',
-            notes: 'Windsurf supports remote MCP servers. Restart the editor after saving config.',
-        },
-        cline: {
-            config: `{
-  "mcpServers": {
-    "hireahuman": {
-      "url": "${MCP_URL}"
+                        path: 'Run `npx -y mcp-remote <MCP_URL>` or add to Codeium/Windsurf startup scripts',
+                        notes: 'Use the npx helper to connect Windsurf (Codeium) to the hosted MCP endpoint.',
+                },
+                cline: {
+                        config: `{
+    "mcpServers": {
+        "hireahuman": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                "${MCP_URL}"
+            ]
+        }
     }
-  }
 }`,
-            path: 'Cline Settings → MCP Servers → Add Remote Server → paste URL',
-            notes: 'Cline (VS Code extension) supports remote MCP. Add via the MCP settings panel.',
-        },
+                        path: 'Cline Settings → Run `npx -y mcp-remote <MCP_URL>` or add the command to the extension startup',
+                        notes: 'Preferred: use `mcp-remote` to connect Cline to the remote MCP endpoint.',
+                },
     };
 
     const currentIDE = ideConfigs[activeIDE];
