@@ -2,7 +2,7 @@
 
 const PAYU_KEY = Deno.env.get("PAYU_KEY") || "VuLVUB";
 const PAYU_SALT = Deno.env.get("PAYU_SALT") || "c6Ro2EH7z80hfihiHQF9dLrDnBAiV9sk";
-const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://test.payu.in";
+const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://info.payu.in";
 
 export default async function (req) {
     const corsHeaders = {

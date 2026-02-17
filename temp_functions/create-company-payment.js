@@ -2,7 +2,7 @@ import { createClient } from "npm:@insforge/sdk";
 
 const PAYU_KEY = Deno.env.get("PAYU_KEY") || "VuLVUB";
 const PAYU_SALT = Deno.env.get("PAYU_SALT") || "c6Ro2EH7z80hfihiHQF9dLrDnBAiV9sk";
-const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://test.payu.in";
+const PAYU_BASE_URL = Deno.env.get("PAYU_BASE_URL") || "https://info.payu.in";
 const COMPANY_AMOUNT = "1000.00"; // INR — server-enforced
 
 export default async function (req) {
@@ -75,7 +75,7 @@ export default async function (req) {
         const furl = `${Deno.env.get("FRONTEND_URL") || "https://hire-a-human.app"}/verify-company?payment=failed&type=company`;
 
         // Generate PayU hash: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT
-        const hashString = `${PAYU_KEY}|${txnid}|${COMPANY_AMOUNT}|${productinfo}|${firstname}|${email}|${user_id}|${company_id}||||||||${PAYU_SALT}`;
+        const hashString = `${PAYU_KEY}|${txnid}|${COMPANY_AMOUNT}|${productinfo}|${firstname}|${email}|${user_id}|${company_id}|||||||||${PAYU_SALT}`;
         const hash = await generateSha512(hashString);
 
         return new Response(JSON.stringify({
