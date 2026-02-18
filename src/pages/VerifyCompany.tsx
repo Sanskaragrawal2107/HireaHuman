@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { Shield, CheckCircle, Building, Globe, CreditCard, Lock, Mail, Eye, EyeOff, ArrowRight, Loader2, AlertTriangle, Briefcase } from 'lucide-react';
 import { insforge } from '../lib/insforge';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { logger } from '../lib/logger';
 
 export const VerifyCompanyPage = () => {
     const navigate = useNavigate();
+    const { refreshSession } = useAuth();
 
     // Page state
     const [pageLoading, setPageLoading] = useState(true);
@@ -63,6 +65,7 @@ export const VerifyCompanyPage = () => {
                     if (company) {
                         // Only redirect to dashboard if payment was completed
                         if (company.subscription_status === 'paid' || company.subscription_status === 'active') {
+                            await refreshSession();
                             navigate('/recruiter-dashboard');
                             return;
                         }
@@ -157,6 +160,7 @@ export const VerifyCompanyPage = () => {
                 if (company) {
                     // Only redirect if payment is completed
                     if (company.subscription_status === 'paid' || company.subscription_status === 'active') {
+                        await refreshSession();
                         navigate('/recruiter-dashboard');
                     } else {
                         // Resume payment step

@@ -74,7 +74,7 @@ const router = createBrowserRouter([
       },
       {
         path: "recruiter-dashboard",
-        element: <ProtectedRoute><RecruiterDashboard /></ProtectedRoute>,
+        element: <ProtectedRoute redirectTo="/verify"><RecruiterDashboard /></ProtectedRoute>,
       },
       {
         path: "admin",
