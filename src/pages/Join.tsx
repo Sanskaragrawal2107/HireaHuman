@@ -25,7 +25,24 @@ export const JoinPage = () => {
 
     useEffect(() => {
         if (!authLoading && user) {
-            navigate('/profile');
+            // Check if this user is a company (recruiter) — redirect them to recruiter dashboard
+            const checkUserType = async () => {
+                try {
+                    const { data: company } = await insforge.database
+                        .from('companies')
+                        .select('id, subscription_status')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
+                    if (company && (company.subscription_status === 'paid' || company.subscription_status === 'active')) {
+                        navigate('/recruiter-dashboard');
+                    } else {
+                        navigate('/profile');
+                    }
+                } catch {
+                    navigate('/profile');
+                }
+            };
+            checkUserType();
         }
     }, [user, authLoading, navigate]);
 

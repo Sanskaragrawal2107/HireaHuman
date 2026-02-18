@@ -277,47 +277,16 @@ const HiredConfirmationComponent = ({ candidate_handle, candidate_name, message 
         setError(null);
 
         try {
-            logger.info('Looking up profile for handle:', candidate_handle);
-            
-            // Get candidate profile
-            const { data: profile, error: queryError } = await insforge.database
-                .from('profiles')
-                .select('id')
-                .eq('handle', candidate_handle)
-                .single();
+            // Call edge function to mark as hired (server-side, bypasses RLS)
+            // @ts-ignore
+            const { data: markResult, error: markError } = await insforge.functions.invoke('mark-hired', {
+                body: { candidate_handle },
+            });
 
-            logger.info('Profile lookup result:', { profile, queryError });
+            if (markError) throw new Error(markError.message || 'Failed to mark as hired');
+            if (!markResult?.success) throw new Error('Server returned failure');
 
-            if (queryError) {
-                throw new Error(`Database error: ${queryError.message}`);
-            }
-
-            if (!profile?.id) {
-                throw new Error(`Candidate with handle "@${candidate_handle}" not found in database`);
-            }
-
-            logger.info('Found profile ID:', profile.id);
-
-            // Update hiring status
-            await insforge.database
-                .from('hirings')
-                .upsert([{
-                    candidate_id: profile.id,
-                    company_id: company.id,
-                    status: 'hired',
-                    hired_at: new Date().toISOString(),
-                }], { onConflict: 'candidate_id,company_id' });
-
-            // Update candidate's general availability status
-            await insforge.database
-                .from('profiles')
-                .update({ 
-                    employment_status: 'HIRED',
-                    hired_company_id: company.id 
-                })
-                .eq('id', profile.id);
-
-            logger.info('Candidate marked as hired');
+            logger.info('Candidate marked as hired via edge function');
             setMarked(true);
         } catch (err) {
             logger.error('Mark hired error:', err);

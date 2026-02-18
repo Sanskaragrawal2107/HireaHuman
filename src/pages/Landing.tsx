@@ -559,6 +559,17 @@ export const LandingPage = () => {
                     <div className="mt-24 text-zinc-600 text-xs font-mono uppercase tracking-[0.3em]">
                         HireAHuman.ai // The Professional Layer for AI Hiring
                     </div>
+
+                    <div className="mt-6">
+                        <a
+                            href="https://tally.so/r/D4N7yZ"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 border border-zinc-700 text-zinc-400 hover:border-cyan-500 hover:text-cyan-400 transition-all text-xs font-mono uppercase tracking-widest rounded-full"
+                        >
+                            💬 Share Feedback
+                        </a>
+                    </div>
                 </div>
             </footer >
         </div >
