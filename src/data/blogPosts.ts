@@ -183,71 +183,267 @@ HireAHuman is the infrastructure layer for this future.
     {
         id: '0',
         slug: 'introducing-hire-a-human',
-        title: 'Introducing Hire A Human \u2013 A Skill-Based Hiring Platform',
-        excerpt: 'Hire A Human is a new kind of hiring platform that replaces resume-screening with GitHub-verified skill profiles. Here is what we are building and why.',
+        title: 'Welcome to Hire A Human — Hiring Should Be Search, Not Submission',
+        excerpt: 'You are not building a job board. You are building an on-demand AI hiring agent. No job postings. No resume spam. Companies search engineers. Engineers get discovered.',
         author: 'Sanskar Agrawal',
         date: 'Feb 20, 2026',
         readTime: '5 min read',
         image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1000',
         tags: ['Announcement', 'Platform', 'Hire A Human'],
         content: `
-## What is Hire A Human?
+# Welcome to Hire A Human
 
-**Hire A Human** (also known as HireAHuman) is a skill-based hiring platform that helps companies hire verified engineers without relying on resumes.
+## Hiring Should Be Search, Not Submission
 
-The core insight behind Hire A Human is simple: **resumes are claims. Code is proof.**
+Hire A Human is a skill-first hiring infrastructure where companies search for engineers the way engineers search on Google.
 
-We built the Hire A Human platform because we watched brilliant engineers get screened out by keyword-matching ATS systems, while candidates with perfectly formatted PDFs and no real skills sailed through. That is a broken system.
+No job postings.
+No resume spam.
+No mass applying.
 
----
-
-## Why We Built Hire A Human
-
-When our founder, Sanskar Agrawal, was applying for his first engineering roles, he noticed something absurd. Interviewers would spend 30 minutes on a resume that took 10 minutes to write, and skip the GitHub link that contained 2 years of daily commits.
-
-**Hire A Human** flips this model. On the Hire A Human platform, your GitHub profile IS your resume.
-
-We analyze:
-- **Commit frequency** — Are you coding consistently?
-- **Repository complexity** — Are you shipping systems or tutorials?
-- **Pull request activity** — Do you collaborate and review code?
-- **Technology depth** — Do you have surface knowledge or real expertise?
-
-This gives you a **Reality Score** — an objective measure of your engineering output.
+Just intelligent, on-demand talent discovery.
 
 ---
 
-## For Companies: Stop Hiring On Paper
+# The Real Problem With Hiring
 
-When a company joins Hire A Human, they get access to a curated pool of engineers who have been verified by their actual code output. No resume spam. No keyword games.
+Hiring today is broken at two levels.
 
-The Hire A Human platform uses the Model Context Protocol (MCP) to let AI-powered recruitment agents query our database directly. A recruiter can ask: *"Find me a backend engineer with real Rust experience and contributions in the last 30 days"* — and get accurate matches in seconds.
+### 1️⃣ Resume Theater
 
-To keep the platform safe for engineers, every company must pay a small refundable deposit to confirm they are a real employer.
+Anyone can generate a perfect resume using AI.
+
+Polished bullet points.
+Fancy formatting.
+Buzzwords everywhere.
+
+But resumes are claims.
+
+They don't prove:
+
+* Did you actually build this?
+* Did you understand the system?
+* Did you solve real problems?
+* Or did you fork a repo and rewrite the README?
+
+Recruiters end up screening documents, not engineers.
 
 ---
 
-## For Engineers: Your Code Does the Talking
+### 2️⃣ Opportunity Chaos
 
-Sign up on Hire A Human, link your GitHub, and let your commit history speak for itself. The Hire A Human platform shows only your profile to companies that match your skills — your full resume is locked and private until you choose to share it.
+Engineers spend months:
 
-No more mass-applying. No more getting ghosted. When a company contacts you on **Hire A Human**, they have already seen your verified skills and decided they want to talk.
+* Checking LinkedIn
+* Checking company career pages
+* Checking Wellfound
+* Applying on 10 portals
+* Tracking spreadsheets
+* Waiting 30–45 days for shortlisting
+
+They miss opportunities because roles are scattered.
+
+They waste time optimizing resumes instead of building projects.
+
+That's not meritocracy.
+That's survival mode.
 
 ---
 
-## What's Next for Hire A Human
+# What We Built Instead
 
-We are launching with:
-- ✅ GitHub-based verification and Reality Score
-- ✅ AI-powered recruiter chatbot (MCP-native)
-- ✅ Verified company badges with refundable deposit system
-- ✅ LeetCode skill verification
-- 🔜 Agent-to-agent job negotiation (Q2 2026)
-- 🔜 Live coding challenge rooms
+Hire A Human flips the model.
 
-Join the **Hire A Human** waitlist today and be among the first verified engineers on the platform.
+Instead of:
 
-*Welcome to the future of hiring. Welcome to Hire A Human.*
+Engineers applying to companies.
+
+We built a system where:
+
+Companies search engineers.
+
+---
+
+# How It Actually Works
+
+## Step 1: Engineer Creates Profile (One Time)
+
+* Link GitHub
+* Link LeetCode
+* Add structured experience details
+
+We do NOT pre-score everyone from day one.
+
+There is no automatic "rating" given just for signing up.
+
+Your profile is stored as structured data — not judged upfront.
+
+Then you go build.
+
+Do your karma.
+
+Ship projects.
+Solve problems.
+Stay consistent.
+
+---
+
+## Step 2: Company Registers
+
+A company verifies itself and opens the Hire A Human chatbot.
+
+No job posting forms.
+No public listings.
+No spam pipeline.
+
+Just a conversation.
+
+Example:
+
+"Find me an AI/ML engineer in Indore with 1 year experience."
+
+The chatbot:
+
+* Searches structured profiles
+* Matches based on declared skills, tech stack, and metadata
+* Returns the most relevant 10 profiles
+
+Instantly.
+
+---
+
+## Step 3: On-Demand Deep Analysis
+
+Now the company can say:
+
+"Analyse their GitHub and LeetCode and give me the real 5 builders."
+
+Only at this stage does deep verification begin.
+
+The chatbot analyzes:
+
+### GitHub:
+
+* Commit consistency
+* Real contribution vs forked repos
+* Code complexity
+* System-level thinking
+* Activity recency
+
+### LeetCode:
+
+* Problem count
+* Medium/Hard ratio
+* Consistency over time
+* Pattern depth
+* Real problem-solving vs surface grinding
+
+It checks if the profile is real signal or buzzword noise.
+
+This is not pre-judgment.
+It is demand-based verification.
+
+---
+
+## Step 4: Automated Outreach
+
+The company selects 3 profiles.
+
+They say:
+
+"Mail them."
+
+Automated outreach goes directly to those engineers.
+
+The engineer didn't apply.
+Didn't track dashboards.
+Didn't wait 45 days.
+Didn't tailor a resume.
+
+They get contacted because their work matched.
+
+---
+
+# Why This Is a Win-Win
+
+## For Recruiters
+
+* No 47-day manual screening cycles
+* No resume spam
+* No ATS keyword filtering
+* No fake experience claims
+* Get verified engineers in 1–2 hours
+
+Hiring becomes search + verification.
+
+---
+
+## For Engineers
+
+* No mass applying
+* No ATS-optimized resume tweaking
+* No waiting 45 days for shortlisting
+* No chasing scattered portals
+
+Make profile once.
+Build real projects.
+Solve real problems.
+
+If you're good, you get discovered.
+
+---
+
+# The Philosophy
+
+In a world where AI can generate resumes,
+
+Presentation is cheap.
+
+Behavior is expensive.
+
+Hire A Human doesn't score you for existing.
+
+It verifies you when opportunity demands it.
+
+That keeps the system fair.
+
+---
+
+# What Makes It Different
+
+We are not:
+
+* A job board
+* A resume marketplace
+* An ATS replacement
+* A LinkedIn clone
+
+We are:
+
+An AI-powered talent search engine.
+
+Companies don't post jobs.
+They query talent.
+
+Engineers don't apply.
+They build.
+
+---
+
+# The Bigger Vision
+
+Move hiring from:
+
+Application-based → Discovery-based
+Resume-based → Code-based
+Waiting-based → Real-time verification
+
+If you're good, you don't need to shout.
+
+Your work will surface you.
+
+Welcome to Hire A Human.
+Where you don't apply. You get discovered.
         `
     },
     {
