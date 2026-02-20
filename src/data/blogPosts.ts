@@ -191,259 +191,103 @@ HireAHuman is the infrastructure layer for this future.
         image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1000',
         tags: ['Announcement', 'Platform', 'Hire A Human'],
         content: `
-# Welcome to Hire A Human
-
 ## Hiring Should Be Search, Not Submission
 
-Hire A Human is a skill-first hiring infrastructure where companies search for engineers the way engineers search on Google.
-
-No job postings.
-No resume spam.
-No mass applying.
-
-Just intelligent, on-demand talent discovery.
+**Hire A Human** is a skill-first hiring infrastructure where companies search for engineers the way engineers search on Google. No job postings. No resume spam. No mass applying. Just intelligent, on-demand talent discovery.
 
 ---
 
-# The Real Problem With Hiring
+## The Real Problem With Hiring
 
 Hiring today is broken at two levels.
 
-### 1️⃣ Resume Theater
+### 1. Resume Theater
 
-Anyone can generate a perfect resume using AI.
-
-Polished bullet points.
-Fancy formatting.
-Buzzwords everywhere.
-
-But resumes are claims.
-
-They don't prove:
-
-* Did you actually build this?
-* Did you understand the system?
-* Did you solve real problems?
-* Or did you fork a repo and rewrite the README?
+Anyone can generate a perfect resume using AI — polished bullet points, fancy formatting, buzzwords everywhere. But **resumes are claims**. They don't prove whether you actually built something, whether you understood the system, or whether you solved real problems — or just forked a repo and rewrote the README.
 
 Recruiters end up screening documents, not engineers.
 
----
+### 2. Opportunity Chaos
 
-### 2️⃣ Opportunity Chaos
-
-Engineers spend months:
-
-* Checking LinkedIn
-* Checking company career pages
-* Checking Wellfound
-* Applying on 10 portals
-* Tracking spreadsheets
-* Waiting 30–45 days for shortlisting
-
-They miss opportunities because roles are scattered.
-
-They waste time optimizing resumes instead of building projects.
-
-That's not meritocracy.
-That's survival mode.
+Engineers spend months checking LinkedIn, company career pages, Wellfound, and 10 different portals — tracking spreadsheets, waiting 30–45 days for shortlisting. They miss opportunities because roles are scattered. They waste time optimizing resumes instead of building projects. That's not meritocracy. **That's survival mode.**
 
 ---
 
-# What We Built Instead
+## What We Built Instead
 
-Hire A Human flips the model.
-
-Instead of:
-
-Engineers applying to companies.
-
-We built a system where:
-
-Companies search engineers.
+Hire A Human flips the model. Instead of engineers applying to companies, we built a system where **companies search engineers**.
 
 ---
 
-# How It Actually Works
+## How It Actually Works
 
-## Step 1: Engineer Creates Profile (One Time)
+### Step 1: Engineer Creates Profile (One Time)
 
-* Link GitHub
-* Link LeetCode
-* Add structured experience details
+Link your GitHub. Link LeetCode. Add structured experience details. That's it.
 
-We do NOT pre-score everyone from day one.
+We do **not** pre-score everyone from day one. There is no automatic "rating" given just for signing up. Your profile is stored as structured data — not judged upfront. Then you go build. Do your karma. Ship projects, solve problems, stay consistent.
 
-There is no automatic "rating" given just for signing up.
+### Step 2: Company Registers and Searches
 
-Your profile is stored as structured data — not judged upfront.
+A verified company opens the Hire A Human chatbot — no job posting forms, no public listings, no spam pipeline. Just a conversation:
 
-Then you go build.
+> *"Find me an AI/ML engineer in Indore with 1 year experience."*
 
-Do your karma.
+The chatbot searches structured profiles, matches based on declared skills, tech stack, and metadata, and returns the most relevant 10 profiles. Instantly.
 
-Ship projects.
-Solve problems.
-Stay consistent.
-
----
-
-## Step 2: Company Registers
-
-A company verifies itself and opens the Hire A Human chatbot.
-
-No job posting forms.
-No public listings.
-No spam pipeline.
-
-Just a conversation.
-
-Example:
-
-"Find me an AI/ML engineer in Indore with 1 year experience."
-
-The chatbot:
-
-* Searches structured profiles
-* Matches based on declared skills, tech stack, and metadata
-* Returns the most relevant 10 profiles
-
-Instantly.
-
----
-
-## Step 3: On-Demand Deep Analysis
+### Step 3: On-Demand Deep Analysis
 
 Now the company can say:
 
-"Analyse their GitHub and LeetCode and give me the real 5 builders."
+> *"Analyse their GitHub and LeetCode and give me the real 5 builders."*
 
-Only at this stage does deep verification begin.
+Only at this stage does deep verification begin. The chatbot analyzes:
 
-The chatbot analyzes:
+**GitHub:** Commit consistency, real contributions vs forked repos, code complexity, system-level thinking, and activity recency.
 
-### GitHub:
+**LeetCode:** Problem count, Medium/Hard ratio, consistency over time, pattern depth, and real problem-solving vs surface grinding.
 
-* Commit consistency
-* Real contribution vs forked repos
-* Code complexity
-* System-level thinking
-* Activity recency
+It checks whether the profile is **real signal or buzzword noise**. This is not pre-judgment — it is demand-based verification.
 
-### LeetCode:
+### Step 4: Automated Outreach
 
-* Problem count
-* Medium/Hard ratio
-* Consistency over time
-* Pattern depth
-* Real problem-solving vs surface grinding
+The company selects 3 profiles and says: *"Mail them."* Automated outreach goes directly to those engineers.
 
-It checks if the profile is real signal or buzzword noise.
-
-This is not pre-judgment.
-It is demand-based verification.
+The engineer didn't apply. Didn't track dashboards. Didn't wait 45 days. Didn't tailor a resume. **They got contacted because their work matched.**
 
 ---
 
-## Step 4: Automated Outreach
+## Why This Is a Win-Win
 
-The company selects 3 profiles.
+**For Recruiters:** No 47-day manual screening cycles, no resume spam, no ATS keyword filtering, no fake experience claims. Get verified engineers in 1–2 hours. Hiring becomes search + verification.
 
-They say:
-
-"Mail them."
-
-Automated outreach goes directly to those engineers.
-
-The engineer didn't apply.
-Didn't track dashboards.
-Didn't wait 45 days.
-Didn't tailor a resume.
-
-They get contacted because their work matched.
+**For Engineers:** No mass applying, no ATS-optimized resume tweaking, no waiting 45 days for shortlisting, no chasing scattered portals. Make profile once. Build real projects. Solve real problems. If you're good, you get discovered.
 
 ---
 
-# Why This Is a Win-Win
+## The Philosophy
 
-## For Recruiters
+In a world where AI can generate resumes, **presentation is cheap. Behavior is expensive.**
 
-* No 47-day manual screening cycles
-* No resume spam
-* No ATS keyword filtering
-* No fake experience claims
-* Get verified engineers in 1–2 hours
-
-Hiring becomes search + verification.
+Hire A Human doesn't score you for existing. It verifies you when opportunity demands it. That keeps the system fair.
 
 ---
 
-## For Engineers
+## What Makes It Different
 
-* No mass applying
-* No ATS-optimized resume tweaking
-* No waiting 45 days for shortlisting
-* No chasing scattered portals
+We are not a job board, a resume marketplace, an ATS replacement, or a LinkedIn clone.
 
-Make profile once.
-Build real projects.
-Solve real problems.
-
-If you're good, you get discovered.
+**We are an AI-powered talent search engine.** Companies don't post jobs — they query talent. Engineers don't apply — they build.
 
 ---
 
-# The Philosophy
+## The Bigger Vision
 
-In a world where AI can generate resumes,
+Move hiring from application-based to discovery-based. From resume-based to code-based. From waiting-based to real-time verification.
 
-Presentation is cheap.
+If you're good, you don't need to shout. Your work will surface you.
 
-Behavior is expensive.
-
-Hire A Human doesn't score you for existing.
-
-It verifies you when opportunity demands it.
-
-That keeps the system fair.
-
----
-
-# What Makes It Different
-
-We are not:
-
-* A job board
-* A resume marketplace
-* An ATS replacement
-* A LinkedIn clone
-
-We are:
-
-An AI-powered talent search engine.
-
-Companies don't post jobs.
-They query talent.
-
-Engineers don't apply.
-They build.
-
----
-
-# The Bigger Vision
-
-Move hiring from:
-
-Application-based → Discovery-based
-Resume-based → Code-based
-Waiting-based → Real-time verification
-
-If you're good, you don't need to shout.
-
-Your work will surface you.
-
-Welcome to Hire A Human.
-Where you don't apply. You get discovered.
+**Welcome to Hire A Human. Where you don't apply. You get discovered.**
         `
     },
     {
