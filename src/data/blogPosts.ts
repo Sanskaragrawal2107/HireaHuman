@@ -181,6 +181,76 @@ HireAHuman is the infrastructure layer for this future.
         `
     },
     {
+        id: '0',
+        slug: 'introducing-hire-a-human',
+        title: 'Introducing Hire A Human \u2013 A Skill-Based Hiring Platform',
+        excerpt: 'Hire A Human is a new kind of hiring platform that replaces resume-screening with GitHub-verified skill profiles. Here is what we are building and why.',
+        author: 'Sanskar Agrawal',
+        date: 'Feb 20, 2026',
+        readTime: '5 min read',
+        image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1000',
+        tags: ['Announcement', 'Platform', 'Hire A Human'],
+        content: `
+## What is Hire A Human?
+
+**Hire A Human** (also known as HireAHuman) is a skill-based hiring platform that helps companies hire verified engineers without relying on resumes.
+
+The core insight behind Hire A Human is simple: **resumes are claims. Code is proof.**
+
+We built the Hire A Human platform because we watched brilliant engineers get screened out by keyword-matching ATS systems, while candidates with perfectly formatted PDFs and no real skills sailed through. That is a broken system.
+
+---
+
+## Why We Built Hire A Human
+
+When our founder, Sanskar Agrawal, was applying for his first engineering roles, he noticed something absurd. Interviewers would spend 30 minutes on a resume that took 10 minutes to write, and skip the GitHub link that contained 2 years of daily commits.
+
+**Hire A Human** flips this model. On the Hire A Human platform, your GitHub profile IS your resume.
+
+We analyze:
+- **Commit frequency** — Are you coding consistently?
+- **Repository complexity** — Are you shipping systems or tutorials?
+- **Pull request activity** — Do you collaborate and review code?
+- **Technology depth** — Do you have surface knowledge or real expertise?
+
+This gives you a **Reality Score** — an objective measure of your engineering output.
+
+---
+
+## For Companies: Stop Hiring On Paper
+
+When a company joins Hire A Human, they get access to a curated pool of engineers who have been verified by their actual code output. No resume spam. No keyword games.
+
+The Hire A Human platform uses the Model Context Protocol (MCP) to let AI-powered recruitment agents query our database directly. A recruiter can ask: *"Find me a backend engineer with real Rust experience and contributions in the last 30 days"* — and get accurate matches in seconds.
+
+To keep the platform safe for engineers, every company must pay a small refundable deposit to confirm they are a real employer.
+
+---
+
+## For Engineers: Your Code Does the Talking
+
+Sign up on Hire A Human, link your GitHub, and let your commit history speak for itself. The Hire A Human platform shows only your profile to companies that match your skills — your full resume is locked and private until you choose to share it.
+
+No more mass-applying. No more getting ghosted. When a company contacts you on **Hire A Human**, they have already seen your verified skills and decided they want to talk.
+
+---
+
+## What's Next for Hire A Human
+
+We are launching with:
+- ✅ GitHub-based verification and Reality Score
+- ✅ AI-powered recruiter chatbot (MCP-native)
+- ✅ Verified company badges with refundable deposit system
+- ✅ LeetCode skill verification
+- 🔜 Agent-to-agent job negotiation (Q2 2026)
+- 🔜 Live coding challenge rooms
+
+Join the **Hire A Human** waitlist today and be among the first verified engineers on the platform.
+
+*Welcome to the future of hiring. Welcome to Hire A Human.*
+        `
+    },
+    {
         id: '5',
         slug: 'ai-agents-are-now-hiring-engineers',
         title: 'AI Agents Are Now Hiring Engineers: Here Is How To Prepare',

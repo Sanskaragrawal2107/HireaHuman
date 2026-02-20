@@ -1,3 +1,70 @@
+# ============================================================
+# robots.txt — hire-a-human.app
+# Updated: 2026-02-20
+# ============================================================
+
+# ── Default: Allow all well-behaved crawlers ─────────────────
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /recruiter-dashboard
+Disallow: /admin
+Disallow: /profile
+
+# ── Google ───────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# ── Bing / Microsoft Copilot ─────────────────────────────────
+User-agent: bingbot
+Allow: /
+
+# ── OpenAI — ChatGPT Search, GPT browsing, training ─────────
+# OAI-SearchBot  → powers ChatGPT search results
+# GPTBot         → used for OpenAI model training & retrieval
+# ChatGPT-User   → real-time web access during user sessions
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# ── Anthropic / Claude ────────────────────────────────────────
+# Claude-SearchBot → powers Claude search results
+# ClaudeBot        → model training
+# Claude-User      → real-time user search sessions
+# anthropic-ai     → general Anthropic crawler
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# ── Perplexity AI ─────────────────────────────────────────────
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# ── Other major search engines ────────────────────────────────
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# ── Sitemap ──────────────────────────────────────────────────
 Sitemap: https://hire-a-human.app/sitemap.xml

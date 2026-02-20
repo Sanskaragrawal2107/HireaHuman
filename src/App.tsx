@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -56,6 +56,7 @@ const router = createBrowserRouter([
       { path: "docs", element: <DocsPage /> },
       { path: "blog", element: <BlogPage /> },
       { path: "blog/:slug", element: <BlogPostPage /> },
+      { path: "introducing-hire-a-human", element: <Navigate to="/blog/introducing-hire-a-human" replace /> },
       { path: "hire-humans", element: <HireHumansPage /> },
       { path: "vs/rentahuman", element: <VsRentAHuman /> },
 
