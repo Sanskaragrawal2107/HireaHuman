@@ -1,73 +1,177 @@
-# React + TypeScript + Vite
+# HireAHuman.ai
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The day AI started hiring humans.
 
-Currently, two official plugins are available:
+HireAHuman is a live, AI-native hiring product where engineers are evaluated by proof of work, not resume theatre.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+[Live Product](https://hire-a-human.app/) | [Product Hunt](https://www.producthunt.com/products/hireahuman-ai?utm_source=other&utm_medium=social) | [Launch Video](https://youtu.be/KCaputXvK5Y)
 
-## React Compiler
+## Product First
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+HireAHuman is built around a simple shift:
 
-## Expanding the ESLint configuration
+- Candidates stop rewriting resumes for every application
+- Recruiters stop reading resume spam
+- AI does first-pass technical discovery from structured signals
+- Humans make the final hiring decision
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+In production, the platform emphasizes:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Verified company access before recruiter actions
+- Candidate state lock to prevent double booking
+- Profile-as-data (skills, projects, experience, job target)
+- MCP-powered AI retrieval for role-to-candidate matching
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Product Screenshots
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+### Hero
+
+![HireAHuman Hero](./public/readme/hero.png)
+
+### Talent Discovery
+
+![Talent Discovery](./public/readme/discovery.png)
+
+### Talent Verification Experience
+
+![Talent Verification](./public/readme/verification.png)
+
+## Product Demo
+
+- YouTube: [Watch the launch demo](https://youtu.be/KCaputXvK5Y)
+
+## What Makes The Product Different
+
+1. Resume claims are de-prioritized in favor of technical proof.
+2. Recruiters are verified before getting access to candidates.
+3. AI assists with discovery, but decision-making stays human.
+4. Hiring is modeled as system state, not just messaging workflows.
+
+## Who This Is For
+
+### Engineers
+
+- Build your profile once.
+- Get discovered for matching roles.
+- Focus on work quality instead of resume optimization.
+
+### Hiring Teams
+
+- Describe the role in skills and constraints.
+- Use AI-assisted discovery to shortlist faster.
+- Review structured candidate signals before outreach.
+
+## Live Feature Set
+
+- Candidate onboarding and profile creation
+- Recruiter onboarding with company verification workflow
+- Admin moderation panel for verification decisions
+- Talent browsing and filtering
+- Dashboard-level candidate insights (including monthly profile views)
+- MCP server for AI agent candidate discovery
+
+## Architecture At A Glance
+
+1. React + TypeScript frontend (SPA)
+2. InsForge backend (auth, database, storage)
+3. Python FastMCP server for AI tool interface
+4. Policy-led access model with verification and role-based flows
+
+Detailed docs:
+
+- [Frontend.md](Frontend.md)
+- [Backend.md](Backend.md)
+- [AUTH_SETUP.md](AUTH_SETUP.md)
+- [mcp_server/INSTRUCTIONS.md](mcp_server/INSTRUCTIONS.md)
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+- Python 3.10+
+
+### Install app dependencies
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Configure environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+macOS/Linux:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+cp env.example .env
 ```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item env.example .env
+```
+
+Required keys are listed in [env.example](env.example).
+
+### Run frontend
+
+```bash
+npm run dev
+```
+
+### Build frontend
+
+```bash
+npm run build
+```
+
+## MCP Server Setup
+
+```bash
+cd mcp_server
+pip install -r requirements.txt
+python server.py
+```
+
+For HTTP transport:
+
+```bash
+python server.py --transport http --port 8000
+```
+
+## Launch Release Notes (Draft)
+
+### Version
+
+- v1.0.0-launch
+
+### Launch Message
+
+- HireAHuman is now live: AI-assisted, verification-first hiring where commits matter more than claims.
+
+### Highlights
+
+- Live product release for engineers and hiring teams
+- Candidate and recruiter pipelines available
+- Verification, profile state, and hiring signal workflows active
+- MCP integration available for AI-native matching workflows
+
+### Launch Links
+
+- Website: [https://hire-a-human.app/](https://hire-a-human.app/)
+- Product Hunt: [https://www.producthunt.com/products/hireahuman-ai?utm_source=other&utm_medium=social](https://www.producthunt.com/products/hireahuman-ai?utm_source=other&utm_medium=social)
+- Demo Video: [https://youtu.be/KCaputXvK5Y](https://youtu.be/KCaputXvK5Y)
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| npm run dev | Start development server |
+| npm run build | Type-check and production build |
+| npm run lint | Lint checks |
+| npm run preview | Preview production build |
+
+## Repository
+
+- GitHub: [https://github.com/Sanskaragrawal2107/HireaHuman.git](https://github.com/Sanskaragrawal2107/HireaHuman.git)
